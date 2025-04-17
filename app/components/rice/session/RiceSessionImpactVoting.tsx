@@ -308,8 +308,8 @@ export default function RiceSessionImpactVoting({ sessionId, onBack, onNext }: R
       value: kpi.points
     };
     
-    // Remove any existing vote from this user
-    const updatedVotes = votes.filter(vote => vote.participantId !== userForVoting!.id); // Added non-null assertion
+  // Utilisation de l'opérateur ! pour indiquer la non-nullité
+  const updatedVotes = votes.filter(vote => vote.participantId !== userForVoting!.id);
     
     // Add the new vote
     const finalVotes = [...updatedVotes, newVote];
