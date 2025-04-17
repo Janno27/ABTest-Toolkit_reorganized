@@ -2,24 +2,24 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  Table, 
-  TableHeader, 
-  TableRow, 
-  TableHead, 
-  TableBody, 
-  TableCell 
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell
 } from "@/components/ui/table";
 import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { ReachCategoryModal } from "./ReachCategoryModal";
 import { ImpactKpiModal } from "./ImpactKpiModal";
 import { ConfidenceSourceModal } from "./ConfidenceSourceModal";
 import { EffortSizeModal } from "./EffortSizeModal";
-import { 
-  ReachCategory, 
-  ImpactKPI, 
-  ConfidenceSource, 
-  EffortSize 
+import {
+  ReachCategory,
+  ImpactKPI,
+  ConfidenceSource,
+  EffortSize
 } from "@/app/types/RiceServiceTypes";
 
 interface EditableCellProps {
@@ -50,27 +50,21 @@ function EditableCell({ value, onChange, type, min, max, step }: EditableCellPro
   };
 
   return (
-    <div className="relative group">
+    <div onClick={startEditing} className="cursor-pointer">
       {isEditing ? (
         <input
           type={type}
           value={tempValue}
           onChange={handleChange}
           onBlur={handleBlur}
+          autoFocus
           min={min}
           max={max}
           step={step}
-          className="w-full p-1 border rounded"
-          autoFocus
+          className="w-full bg-transparent focus:outline-none"
         />
       ) : (
-        <div className="flex items-center justify-between">
-          <span>{value}</span>
-          <PencilIcon 
-            className="w-4 h-4 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity ml-2" 
-            onClick={startEditing}
-          />
-        </div>
+        <span>{value}</span>
       )}
     </div>
   );
@@ -99,7 +93,6 @@ export function RiceSettingsTable({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
 
-  // Définir les colonnes en fonction du type
   const getColumns = () => {
     switch (type) {
       case "reach":
@@ -143,21 +136,17 @@ export function RiceSettingsTable({
     const item = items.find((item: any) => item.id === id);
     if (item) {
       const updatedItem = { ...item };
-      updatedItem[key] = value;
+      // Correction de l'erreur TypeScript ici
+      updatedItem[key as keyof typeof updatedItem] = value;
       
-      // Si nous modifions un impact KPI, mettre à jour l'exemple
       if (type === "impact") {
         const kpi = updatedItem as ImpactKPI;
-        // Logique pour mettre à jour l'exemple automatiquement
-        const midValue = kpi.minDelta.includes('%') 
+        const midValue = kpi.minDelta.includes('%')
           ? `+${(parseFloat(kpi.minDelta.replace(/[^0-9.]/g, '')) + parseFloat(kpi.maxDelta.replace(/[^0-9.]/g, '')))/2}%`
           : `+${(parseFloat(kpi.minDelta.replace(/[^0-9.]/g, '')) + parseFloat(kpi.maxDelta.replace(/[^0-9.]/g, '')))/2}`;
-        
         const pointValue = parseFloat(kpi.pointsPerUnit.split('/')[0]) * 2;
-        
         updatedItem.example = `Δ ${midValue} → ${pointValue.toFixed(1)}`;
       }
-      
       onEdit(id, updatedItem);
     }
   };
@@ -186,19 +175,18 @@ export function RiceSettingsTable({
     setIsEditModalOpen(true);
   };
 
-  // Rendre le modal approprié en fonction du type
   const renderModal = () => {
     switch (type) {
       case "reach":
         return (
           <>
             <ReachCategoryModal
-              isOpen={isAddModalOpen}
+              open={isAddModalOpen}
               onClose={() => setIsAddModalOpen(false)}
               onSave={handleAdd}
             />
             <ReachCategoryModal
-              isOpen={isEditModalOpen}
+              open={isEditModalOpen}
               onClose={() => setIsEditModalOpen(false)}
               onSave={handleEdit}
               category={currentItem as ReachCategory}
@@ -209,12 +197,12 @@ export function RiceSettingsTable({
         return (
           <>
             <ImpactKpiModal
-              isOpen={isAddModalOpen}
+              open={isAddModalOpen}
               onClose={() => setIsAddModalOpen(false)}
               onSave={handleAdd}
             />
             <ImpactKpiModal
-              isOpen={isEditModalOpen}
+              open={isEditModalOpen}
               onClose={() => setIsEditModalOpen(false)}
               onSave={handleEdit}
               kpi={currentItem as ImpactKPI}
@@ -225,12 +213,12 @@ export function RiceSettingsTable({
         return (
           <>
             <ConfidenceSourceModal
-              isOpen={isAddModalOpen}
+              open={isAddModalOpen}
               onClose={() => setIsAddModalOpen(false)}
               onSave={handleAdd}
             />
             <ConfidenceSourceModal
-              isOpen={isEditModalOpen}
+              open={isEditModalOpen}
               onClose={() => setIsEditModalOpen(false)}
               onSave={handleEdit}
               source={currentItem as ConfidenceSource}
@@ -241,12 +229,12 @@ export function RiceSettingsTable({
         return (
           <>
             <EffortSizeModal
-              isOpen={isAddModalOpen}
+              open={isAddModalOpen}
               onClose={() => setIsAddModalOpen(false)}
               onSave={handleAdd}
             />
             <EffortSizeModal
-              isOpen={isEditModalOpen}
+              open={isEditModalOpen}
               onClose={() => setIsEditModalOpen(false)}
               onSave={handleEdit}
               size={currentItem as EffortSize}
@@ -260,35 +248,35 @@ export function RiceSettingsTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-medium">{title}</h3>
+          <h2 className="text-lg font-semibold">{title}</h2>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
-        <Button 
+        <Button
           onClick={() => setIsAddModalOpen(true)}
           size="sm"
           className="flex items-center gap-1"
         >
-          <PlusIcon className="w-4 h-4" />
-          <span>Add</span>
+          <PlusIcon className="h-4 w-4" />
+          Add
         </Button>
       </div>
-      
+
       <Table>
         <TableHeader>
           <TableRow>
             {columns.map(column => (
               <TableHead key={column.key}>{column.header}</TableHead>
             ))}
-            <TableHead className="w-[100px]">Actions</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item: any) => (
             <TableRow key={item.id}>
               {columns.map(column => (
-                <TableCell key={`${item.id}-${column.key}`}>
+                <TableCell key={column.key}>
                   {column.editable ? (
                     <EditableCell
                       value={item[column.key]}
@@ -303,32 +291,30 @@ export function RiceSettingsTable({
                   )}
                 </TableCell>
               ))}
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
-                    onClick={() => openEditModal(item)}
-                    className="h-8 w-8"
-                  >
-                    <PencilIcon className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
-                    onClick={() => handleDelete(item.id)}
-                    className="h-8 w-8 text-destructive"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </Button>
-                </div>
+              <TableCell className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => openEditModal(item)}
+                  className="h-8 w-8"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleDelete(item.id)}
+                  className="h-8 w-8 text-destructive"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      
+
       {renderModal()}
     </div>
   );
-} 
+}
