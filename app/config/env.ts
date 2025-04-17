@@ -41,17 +41,17 @@ export function validateEnv(): Env {
       console.error('Erreur inattendue lors de la validation des variables d\'environnement:', error);
     }
     
-    // En développement, on peut continuer avec des valeurs par défaut
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('Utilisation de valeurs par défaut pour le développement');
-      return {
-        NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321',
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-        NEXT_PUBLIC_USE_SUPABASE: process.env.NEXT_PUBLIC_USE_SUPABASE || 'false',
-        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-        NODE_ENV: 'development',
-      };
-    }
+// En développement, on peut continuer avec des valeurs par défaut
+if (process.env.NODE_ENV === 'development') {
+  console.warn('Utilisation de valeurs par défaut pour le développement');
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    NEXT_PUBLIC_USE_SUPABASE: process.env.NEXT_PUBLIC_USE_SUPABASE === 'true' ? 'true' : 'false', // Correction ici
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    NODE_ENV: 'development',
+  };
+}
     
     // En production, on doit arrêter l'application
     throw new Error('Variables d\'environnement invalides. Vérifiez votre fichier .env');
