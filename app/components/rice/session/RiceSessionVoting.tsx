@@ -279,39 +279,52 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
 
   // Update votes when a category is selected
   const handleVote = (categoryId: string) => {
-    console.log("==== VOTE DEBUGGING ====");
-    console.log("Category clicked:", categoryId);
-    console.log("handleVote called with categoryId:", categoryId);
-    console.log("currentUser:", currentUser);
-    console.log("localStorage.rice_current_user_id:", localStorage.getItem("rice_current_user_id"));
-    console.log("localStorage[`rice_session_${sessionId}_user`]:", localStorage.getItem(`rice_session_${sessionId}_user`));
-    console.log("All reach categories:", reachCategories);
-    console.log("==== END DEBUGGING ====");
+    console.log("handleVote called:", categoryId);
     
-    // If currentUser is null, create a temporary user as fallback
+    // Handle case where currentUser is null
     let userForVoting = currentUser;
     
     if (!userForVoting) {
-      console.log("No current user found, creating a temporary one");
+      console.log("No current user, trying to get from localStorage");
       
-      // Try to get userId from localStorage
-      const userId = localStorage.getItem("rice_current_user_id") || uuidv4();
+      const userId = localStorage.getItem("rice_current_user_id");
+      const sessionUser = localStorage.getItem(`rice_session_${sessionId}_user`);
       
-      // Create temporary user
-      userForVoting = {
-        id: userId,
-        name: "Anonymous User",
-        role: "facilitator" as const,
-        joinedAt: new Date()
-      };
+      if (sessionUser) {
+        try {
+          userForVoting = JSON.parse(sessionUser);
+          console.log("Reconstructed user:", userForVoting);
+        } catch (e) {
+          console.error("Error parsing user data:", e);
+          toast({
+            title: "Error",
+            description: "Could not parse user data",
+            variant: "destructive"
+          });
+          return;
+        }
+      } else if (userId) {
+        // Create a temporary user
+        userForVoting = {
+          id: userId,
+          name: "Anonymous User",
+          role: "facilitator" as const,
+          joinedAt: new Date()
+        };
+        console.log("Created temporary user:", userForVoting);
+      } else {
+        // No user available
+        console.error("No user available for voting");
+        toast({
+          title: "Error",
+          description: "You need to be logged in to vote",
+          variant: "destructive"
+        });
+        return;
+      }
       
-      // Save this temporary user
-      localStorage.setItem("rice_current_user_id", userId);
-      localStorage.setItem(`rice_session_${sessionId}_user`, JSON.stringify(userForVoting));
-      
-      // Update component state
+      // Update the current user state
       setCurrentUser(userForVoting);
-      console.log("Created temporary user:", userForVoting);
     }
     
     // Find the category to get its point value
@@ -322,6 +335,17 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
     }
     
     console.log("Creating vote with category:", category.name, "points:", category.points);
+    
+    // S'assurer que userForVoting n'est pas null avant de continuer
+    if (!userForVoting) {
+      console.error("User for voting is still null after recovery attempts");
+      toast({
+        title: "Error",
+        description: "Could not identify the current user",
+        variant: "destructive"
+      });
+      return;
+    }
     
     // Create/update vote
     const newVote: Vote = {
