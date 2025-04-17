@@ -33,12 +33,6 @@ export default function PrioritizationTool() {
   const sessionService = supabaseRiceSessionService;
 
   useEffect(() => {
-    // Check if user is logged in
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
-    };
-
     // Load recent sessions
     const loadSessions = async () => {
       try {
@@ -60,8 +54,6 @@ export default function PrioritizationTool() {
         setIsLoadingSessions(false);
       }
     };
-
-    checkUser();
     loadSessions();
   }, []);
 
