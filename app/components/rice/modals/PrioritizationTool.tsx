@@ -14,7 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { RiceSession } from "../../../services/RiceSessionService";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "../../../lib/supabase";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/app/hooks/use-toast";
 import supabaseRiceSessionService from "../../../services/db/SupabaseRiceSessionService";
 
 export default function PrioritizationTool() {

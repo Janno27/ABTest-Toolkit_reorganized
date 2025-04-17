@@ -11,7 +11,7 @@ import {
   ArrowLeft,
   InfoIcon,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/app/hooks/use-toast";
 import supabaseRiceSessionService from "../../../services/db/SupabaseRiceSessionService";
 import { RiceSession } from "../../../services/RiceSessionService";
 import { 

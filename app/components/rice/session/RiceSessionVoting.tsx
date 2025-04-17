@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Eye, EyeOff, Users, ThumbsUp, ThumbsDown, CheckC
 import { v4 as uuidv4 } from "uuid";
 import { useRiceSettingsService } from '../../../hooks/useRiceSettingsService';
 import { RiceSettings, ReachCategory } from '../../../types/RiceServiceTypes';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/app/hooks/use-toast";
 import supabaseRiceSessionService from "../../../services/db/SupabaseRiceSessionService";
 import { ReachVote } from "../../../services/RiceSessionService";
 

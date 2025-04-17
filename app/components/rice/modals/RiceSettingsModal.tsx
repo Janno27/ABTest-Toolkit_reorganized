@@ -34,7 +34,7 @@ import {
   RiceSettings
 } from '../../../types/RiceServiceTypes';
 import { useRiceSettingsService } from '../../../hooks/useRiceSettingsService';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/app/hooks/use-toast';
 
 interface RiceSettingsModalProps {
   open: boolean;

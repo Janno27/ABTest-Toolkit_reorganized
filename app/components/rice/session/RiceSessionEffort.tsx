@@ -24,7 +24,7 @@ import {
 import { useRiceSettingsService } from '../../../hooks/useRiceSettingsService';
 import { RiceSettings, EffortSize as SupabaseEffortSize } from '../../../types/RiceServiceTypes';
 import { v4 as uuidv4 } from 'uuid';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/app/hooks/use-toast";
 import supabaseRiceSessionService from '../../../services/db/SupabaseRiceSessionService';
 
 interface Participant {

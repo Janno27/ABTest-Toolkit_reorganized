@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useRiceSettingsService } from '../../../hooks/useRiceSettingsService';
 import { RiceSettings, ImpactKPI } from '../../../types/RiceServiceTypes';
 import supabaseRiceSessionService from "../../../services/db/SupabaseRiceSessionService";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/app/hooks/use-toast";
 
 interface MetricVote {
   userId: string;
