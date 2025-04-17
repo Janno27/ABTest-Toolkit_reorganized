@@ -97,7 +97,7 @@ export default function Home() {
     setIsCalculating(true);
     try {
       // URL du backend FastAPI sur Render
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://a-b-test-toolkit.onrender.com";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://abtest-toolkit.onrender.com";
       
       const requestBody = {
           visits: Number(visits),
