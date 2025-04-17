@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { v4 as uuidv4 } from "uuid";
-import { ImpactKPI } from "@/app/services/RiceService";
+import { ImpactKPI } from '@/app/types/RiceServiceTypes';
 
 interface ImpactKpiModalProps {
   isOpen: boolean;
@@ -101,7 +101,7 @@ export function ImpactKpiModal({ isOpen, onClose, onSave, kpi }: ImpactKpiModalP
       pointsPerUnit: isBehaviorParent ? "Calculated" : pointsPerUnit, // For Behavior parent
       example: isBehaviorParent ? "Weighted average of sub-metrics" : (example || `Example impact`),
       isBehaviorMetric,
-      parentKPI: isBehaviorMetric ? "Behavior" : undefined
+      parentKPI: undefined // Laissé undefined, sera remplacé côté service par l'ID de Behavior
     };
     
     onSave(newKpi);

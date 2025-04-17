@@ -311,10 +311,12 @@ export function RiceSettingsTable({
         <TableBody>
           {/* Sort items to group behavior sub-metrics under their parent */}
           {items.sort((a: any, b: any) => {
-            // Impact KPIs spécifiques: CVR et Revenue toujours en premier
+            // Trier les éléments: d'abord CVR et Revenue, puis Behavior, puis les sous-métriques de comportement
             if (type === 'impact') {
+              // CVR doit toujours venir en premier
               if (a.name.includes('CVR') && !b.name.includes('CVR')) return -1;
               if (!a.name.includes('CVR') && b.name.includes('CVR')) return 1;
+              // Revenue vient après CVR
               if (a.name.includes('Revenue') && !b.name.includes('Revenue') && !b.name.includes('CVR')) return -1;
               if (!a.name.includes('Revenue') && b.name.includes('Revenue') && !a.name.includes('CVR')) return 1;
               
@@ -326,8 +328,19 @@ export function RiceSettingsTable({
               if (a.isBehaviorMetric && !b.isBehaviorMetric && b.name !== "Behavior") return 1;
               if (!a.isBehaviorMetric && b.isBehaviorMetric && a.name !== "Behavior") return -1;
               
-              // Ordre alphabétique pour le reste
-              return a.name.localeCompare(b.name);
+              // Si un élément est une métrique de comportement, il doit être placé sous Behavior
+              if (a.isBehaviorMetric && b.isBehaviorMetric) return a.name.localeCompare(b.name);
+              
+              // Pour les KPIs normaux (non Behavior et non sous-métriques), les placer avant Behavior
+              if (!a.isBehaviorMetric && a.name !== "Behavior" && b.name === "Behavior") return -1;
+              if (!b.isBehaviorMetric && b.name !== "Behavior" && a.name === "Behavior") return 1;
+              
+              // Ordre alphabétique pour le reste des KPIs normaux
+              if (!a.isBehaviorMetric && !b.isBehaviorMetric && a.name !== "Behavior" && b.name !== "Behavior") {
+                return a.name.localeCompare(b.name);
+              }
+              
+              return 0;
             } 
             // Pour les autres types, conserver le tri précédent
             else {

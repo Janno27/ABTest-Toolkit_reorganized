@@ -11,7 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { ReachCategory } from "@/app/services/RiceService";
+import { ReachCategory } from '@/app/types/RiceServiceTypes';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ReachCategoryModalProps {
   isOpen: boolean;
@@ -55,7 +56,8 @@ export function ReachCategoryModal({
     e.preventDefault();
     setIsSubmitting(true);
     
-    const newCategory: Omit<ReachCategory, 'id'> = {
+    const newCategory: Omit<ReachCategory, 'id'> & { id?: string } = {
+      id: uuidv4(),
       name,
       minReach: parseFloat(minReach),
       maxReach: parseFloat(maxReach),

@@ -94,4 +94,24 @@ export interface RiceServiceInterface {
   createSettings(settings: Omit<RiceSettings, 'id' | 'createdAt' | 'updatedAt'>): Promise<RiceSettings>;
   updateSettings(id: string, updates: Partial<RiceSettings>): Promise<RiceSettings>;
   deleteSettings(id: string): Promise<boolean>;
+  
+  // Reach Categories
+  addReachCategory(settingsId: string, category: Omit<ReachCategory, 'id'>): Promise<ReachCategory>;
+  updateReachCategory(settingsId: string, categoryId: string, updates: Partial<ReachCategory>): Promise<ReachCategory>;
+  deleteReachCategory(settingsId: string, categoryId: string): Promise<boolean>;
+  
+  // Impact KPIs
+  addImpactKPI(settingsId: string, kpi: Omit<ImpactKPI, 'id'>): Promise<ImpactKPI>;
+  updateImpactKPI(settingsId: string, kpiId: string, updates: Partial<ImpactKPI>): Promise<ImpactKPI>;
+  deleteImpactKPI(settingsId: string, kpiId: string): Promise<boolean>;
+  
+  // Confidence Sources
+  addConfidenceSource(settingsId: string, source: Omit<ConfidenceSource, 'id'>): Promise<ConfidenceSource>;
+  updateConfidenceSource(settingsId: string, sourceId: string, updates: Partial<ConfidenceSource>): Promise<ConfidenceSource>;
+  deleteConfidenceSource(settingsId: string, sourceId: string): Promise<boolean>;
+  
+  // Effort Sizes
+  addEffortSize(settingsId: string, size: Omit<EffortSize, 'id'>): Promise<EffortSize>;
+  updateEffortSize(settingsId: string, sizeId: string, updates: Partial<EffortSize>): Promise<EffortSize>;
+  deleteEffortSize(settingsId: string, sizeId: string): Promise<boolean>;
 } 

@@ -219,22 +219,49 @@ export function RiceSettingsModal({
   };
   
   // Gestionnaires pour les catégories de portée
-  const handleAddReachCategory = (category: ReachCategory) => {
-    if (!riceSettings) return;
+  const handleAddReachCategory = async (category: ReachCategory) => {
+    if (!riceSettings || !service) return;
     
     try {
-    const updatedSettings = { 
-      ...riceSettings,
-      reachCategories: [...riceSettings.reachCategories, category],
-      updatedAt: new Date().toISOString()
-    };
-    setRiceSettings(updatedSettings);
+      setIsSaving(true);
+      
+      // Plutôt que de mettre à jour toutes les catégories (ce qui cause le problème de FK),
+      // utiliser une approche d'insertion individuelle
+      const { id, ...categoryWithoutId } = category;
+      
+      // Faire une copie locale pour l'UI
+      const updatedSettings = { 
+        ...riceSettings,
+        reachCategories: [...riceSettings.reachCategories, category],
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Mettre à jour l'état local pour l'UI
+      setRiceSettings(updatedSettings);
+      
+      // Appeler la fonction pour insérer uniquement cette nouvelle catégorie
+      // Envoyer une mise à jour UPDATE_SINGLE_ITEM au lieu d'UPDATE_SETTINGS
+      const update = {
+        id: riceSettings.id,
+        updateSingleItem: {
+          type: 'reach' as 'reach',
+          itemId: category.id,
+          key: 'insert',
+          value: categoryWithoutId
+        }
+      };
+      
+      await service.updateSettings(riceSettings.id, update);
       
       toast({
         title: "Category added",
-        description: "Reach category has been added locally",
+        description: "Reach category has been added successfully",
         variant: "default"
       });
+      
+      // Rafraîchir les données depuis Supabase pour confirmer la synchronisation
+      await refreshSettingsFromDatabase();
+      
     } catch (err) {
       console.error("Erreur lors de l'ajout d'une catégorie:", err);
       toast({
@@ -242,6 +269,8 @@ export function RiceSettingsModal({
         description: "An error occurred while adding the category",
         variant: "destructive"
       });
+    } finally {
+      setIsSaving(false);
     }
   };
   
@@ -266,14 +295,59 @@ export function RiceSettingsModal({
   };
   
   // Gestionnaires pour les KPIs d'impact
-  const handleAddImpactKPI = (kpi: ImpactKPI) => {
-    if (!riceSettings) return;
-    const updatedSettings = { 
-      ...riceSettings,
-      impactKPIs: [...riceSettings.impactKPIs, kpi],
-      updatedAt: new Date().toISOString()
-    };
-    setRiceSettings(updatedSettings);
+  const handleAddImpactKPI = async (kpi: ImpactKPI) => {
+    if (!riceSettings || !service) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // Plutôt que de mettre à jour toutes les KPIs,
+      // utiliser une approche d'insertion individuelle
+      const { id, ...kpiWithoutId } = kpi;
+      
+      // Faire une copie locale pour l'UI
+      const updatedSettings = { 
+        ...riceSettings,
+        impactKPIs: [...riceSettings.impactKPIs, kpi],
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Mettre à jour l'état local pour l'UI
+      setRiceSettings(updatedSettings);
+      
+      // Appeler la fonction pour insérer uniquement ce nouveau KPI
+      // Envoyer une mise à jour UPDATE_SINGLE_ITEM au lieu d'UPDATE_SETTINGS
+      const update = {
+        id: riceSettings.id,
+        updateSingleItem: {
+          type: 'impact' as 'impact',
+          itemId: kpi.id,
+          key: 'insert',
+          value: kpiWithoutId
+        }
+      };
+      
+      await service.updateSettings(riceSettings.id, update);
+      
+      toast({
+        title: "KPI added",
+        description: "Impact KPI has been added successfully",
+        variant: "default"
+      });
+      
+      // Rafraîchir les données depuis Supabase pour confirmer la synchronisation
+      await refreshSettingsFromDatabase();
+      
+    } catch (err) {
+      console.error("Erreur lors de l'ajout d'un KPI:", err);
+      toast({
+        title: "Error",
+        description: "An error occurred while adding the KPI",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
   
   const handleEditImpactKPI = (id: string, kpi: ImpactKPI) => {
@@ -297,14 +371,59 @@ export function RiceSettingsModal({
   };
   
   // Gestionnaires pour les sources de confiance
-  const handleAddConfidenceSource = (source: ConfidenceSource) => {
-    if (!riceSettings) return;
-    const updatedSettings = { 
-      ...riceSettings,
-      confidenceSources: [...riceSettings.confidenceSources, source],
-      updatedAt: new Date().toISOString()
-    };
-    setRiceSettings(updatedSettings);
+  const handleAddConfidenceSource = async (source: ConfidenceSource) => {
+    if (!riceSettings || !service) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // Plutôt que de mettre à jour toutes les sources,
+      // utiliser une approche d'insertion individuelle
+      const { id, ...sourceWithoutId } = source;
+      
+      // Faire une copie locale pour l'UI
+      const updatedSettings = { 
+        ...riceSettings,
+        confidenceSources: [...riceSettings.confidenceSources, source],
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Mettre à jour l'état local pour l'UI
+      setRiceSettings(updatedSettings);
+      
+      // Appeler la fonction pour insérer uniquement cette nouvelle source
+      // Envoyer une mise à jour UPDATE_SINGLE_ITEM au lieu d'UPDATE_SETTINGS
+      const update = {
+        id: riceSettings.id,
+        updateSingleItem: {
+          type: 'confidence' as 'confidence',
+          itemId: source.id,
+          key: 'insert',
+          value: sourceWithoutId
+        }
+      };
+      
+      await service.updateSettings(riceSettings.id, update);
+      
+      toast({
+        title: "Source added",
+        description: "Confidence source has been added successfully",
+        variant: "default"
+      });
+      
+      // Rafraîchir les données depuis Supabase pour confirmer la synchronisation
+      await refreshSettingsFromDatabase();
+      
+    } catch (err) {
+      console.error("Erreur lors de l'ajout d'une source:", err);
+      toast({
+        title: "Error",
+        description: "An error occurred while adding the source",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
   
   const handleEditConfidenceSource = (id: string, source: ConfidenceSource) => {
@@ -328,14 +447,59 @@ export function RiceSettingsModal({
   };
   
   // Gestionnaires pour les tailles d'effort
-  const handleAddEffortSize = (size: EffortSize) => {
-    if (!riceSettings) return;
-    const updatedSettings = { 
-      ...riceSettings,
-      effortSizes: [...riceSettings.effortSizes, size],
-      updatedAt: new Date().toISOString()
-    };
-    setRiceSettings(updatedSettings);
+  const handleAddEffortSize = async (size: EffortSize) => {
+    if (!riceSettings || !service) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // Plutôt que de mettre à jour toutes les tailles,
+      // utiliser une approche d'insertion individuelle
+      const { id, ...sizeWithoutId } = size;
+      
+      // Faire une copie locale pour l'UI
+      const updatedSettings = { 
+        ...riceSettings,
+        effortSizes: [...riceSettings.effortSizes, size],
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Mettre à jour l'état local pour l'UI
+      setRiceSettings(updatedSettings);
+      
+      // Appeler la fonction pour insérer uniquement cette nouvelle taille
+      // Envoyer une mise à jour UPDATE_SINGLE_ITEM au lieu d'UPDATE_SETTINGS
+      const update = {
+        id: riceSettings.id,
+        updateSingleItem: {
+          type: 'effort' as 'effort',
+          itemId: size.id,
+          key: 'insert',
+          value: sizeWithoutId
+        }
+      };
+      
+      await service.updateSettings(riceSettings.id, update);
+      
+      toast({
+        title: "Size added",
+        description: "Effort size has been added successfully",
+        variant: "default"
+      });
+      
+      // Rafraîchir les données depuis Supabase pour confirmer la synchronisation
+      await refreshSettingsFromDatabase();
+      
+    } catch (err) {
+      console.error("Erreur lors de l'ajout d'une taille:", err);
+      toast({
+        title: "Error",
+        description: "An error occurred while adding the size",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
   
   const handleEditEffortSize = (id: string, size: EffortSize) => {

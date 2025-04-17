@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { ConfidenceSource } from "../../../services/RiceService";
+import { ConfidenceSource } from '@/app/types/RiceServiceTypes';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ConfidenceSourceModalProps {
   isOpen: boolean;
@@ -50,7 +51,8 @@ export function ConfidenceSourceModal({
     e.preventDefault();
     setIsSubmitting(true);
     
-    const newSource: Omit<ConfidenceSource, 'id'> = {
+    const newSource: Omit<ConfidenceSource, 'id'> & { id?: string } = {
+      id: uuidv4(),
       name,
       points,
       example

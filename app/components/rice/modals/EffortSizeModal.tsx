@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { EffortSize } from "@/app/services/RiceService";
+import { EffortSize } from '@/app/types/RiceServiceTypes';
+import { v4 as uuidv4 } from 'uuid';
 
 interface EffortSizeModalProps {
   isOpen: boolean;
@@ -56,7 +57,8 @@ export function EffortSizeModal({
     e.preventDefault();
     setIsSubmitting(true);
     
-    const newSize: Omit<EffortSize, 'id'> = {
+    const newSize: Omit<EffortSize, 'id'> & { id?: string } = {
+      id: uuidv4(),
       name,
       duration,
       devEffort,

@@ -170,34 +170,126 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       if (updates.updateSingleItem) {
         const { type, itemId, key, value } = updates.updateSingleItem;
         
-        if (type === 'reach' && itemId) {
-          const { error } = await supabase
-            .from('rice_reach_categories')
-            .update({ [this.toDatabaseKey(key)]: value })
-            .eq('id', itemId);
+        // Gestion de l'insertion d'un nouvel élément
+        if (key === 'insert') {
+          if (type === 'reach') {
+            const dbCategory = {
+              settings_id: id,
+              id: itemId,
+              name: value.name,
+              min_reach: value.minReach,
+              max_reach: value.maxReach,
+              points: value.points,
+              example: value.example
+            };
             
-          if (error) throw error;
-        } else if (type === 'impact' && itemId) {
-          const { error } = await supabase
-            .from('rice_impact_kpis')
-            .update({ [this.toDatabaseKey(key)]: value })
-            .eq('id', itemId);
+            const { error } = await supabase
+              .from('rice_reach_categories')
+              .insert(dbCategory);
+              
+            if (error) throw error;
+          } 
+          else if (type === 'impact') {
+            const dbKPI = {
+              settings_id: id,
+              id: itemId,
+              name: value.name,
+              min_delta: value.minDelta,
+              max_delta: value.maxDelta,
+              points_per_unit: value.pointsPerUnit,
+              example: value.example,
+              is_behavior_metric: value.isBehaviorMetric || false,
+              parent_kpi_id: null
+            };
             
-          if (error) throw error;
-        } else if (type === 'confidence' && itemId) {
-          const { error } = await supabase
-            .from('rice_confidence_sources')
-            .update({ [this.toDatabaseKey(key)]: value })
-            .eq('id', itemId);
+            // Si c'est une métrique de comportement, rechercher d'abord l'ID du KPI Behavior
+            if (value.isBehaviorMetric && value.parentKPI === "Behavior") {
+              // Récupérer l'ID du KPI Behavior
+              const { data: behaviorData, error: behaviorError } = await supabase
+                .from('rice_impact_kpis')
+                .select('id')
+                .eq('settings_id', id)
+                .eq('name', 'Behavior')
+                .single();
+                
+              if (behaviorError) {
+                console.error('Erreur lors de la recherche du KPI Behavior:', behaviorError);
+              } else if (behaviorData) {
+                // Définir l'ID parent avec l'ID réel du KPI Behavior
+                dbKPI.parent_kpi_id = behaviorData.id;
+              }
+            }
             
-          if (error) throw error;
-        } else if (type === 'effort' && itemId) {
-          const { error } = await supabase
-            .from('rice_effort_sizes')
-            .update({ [this.toDatabaseKey(key)]: value })
-            .eq('id', itemId);
+            const { error } = await supabase
+              .from('rice_impact_kpis')
+              .insert(dbKPI);
+              
+            if (error) throw error;
+          }
+          else if (type === 'confidence') {
+            const dbSource = {
+              settings_id: id,
+              id: itemId,
+              name: value.name,
+              points: value.points,
+              example: value.example
+            };
             
-          if (error) throw error;
+            const { error } = await supabase
+              .from('rice_confidence_sources')
+              .insert(dbSource);
+              
+            if (error) throw error;
+          }
+          else if (type === 'effort') {
+            const dbSize = {
+              settings_id: id,
+              id: itemId,
+              name: value.name,
+              duration: value.duration,
+              dev_effort: value.devEffort,
+              design_effort: value.designEffort,
+              example: value.example
+            };
+            
+            const { error } = await supabase
+              .from('rice_effort_sizes')
+              .insert(dbSize);
+              
+            if (error) throw error;
+          }
+        }
+        // Mise à jour d'un élément existant
+        else {
+          if (type === 'reach' && itemId) {
+            const { error } = await supabase
+              .from('rice_reach_categories')
+              .update({ [this.toDatabaseKey(key)]: value })
+              .eq('id', itemId);
+              
+            if (error) throw error;
+          } else if (type === 'impact' && itemId) {
+            const { error } = await supabase
+              .from('rice_impact_kpis')
+              .update({ [this.toDatabaseKey(key)]: value })
+              .eq('id', itemId);
+              
+            if (error) throw error;
+          } else if (type === 'confidence' && itemId) {
+            const { error } = await supabase
+              .from('rice_confidence_sources')
+              .update({ [this.toDatabaseKey(key)]: value })
+              .eq('id', itemId);
+              
+            if (error) throw error;
+          } else if (type === 'effort' && itemId) {
+            const { error } = await supabase
+              .from('rice_effort_sizes')
+              .update({ [this.toDatabaseKey(key)]: value })
+              .eq('id', itemId);
+              
+            if (error) throw error;
+          }
         }
       } 
       // Suppression individuelle d'un élément
