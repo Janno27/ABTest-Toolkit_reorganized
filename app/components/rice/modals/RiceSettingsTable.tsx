@@ -20,7 +20,7 @@ import {
   ImpactKPI, 
   ConfidenceSource, 
   EffortSize 
-} from "@/app/services/RiceService";
+} from "@/app/types/RiceServiceTypes";
 
 interface EditableCellProps {
   value: string | number;
