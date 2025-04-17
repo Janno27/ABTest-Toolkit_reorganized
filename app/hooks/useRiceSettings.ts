@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   RiceSettings
-} from '../services/RiceService';
+} from '@/app/types/RiceServiceTypes';
 import riceSettingsService from '../services/RiceSettingsService';
 import supabaseRiceSettingsService from '../services/db/SupabaseRiceSettingsService';
 
