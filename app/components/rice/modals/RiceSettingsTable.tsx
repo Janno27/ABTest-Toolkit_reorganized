@@ -136,9 +136,15 @@ export function RiceSettingsTable({
     const item = items.find((item: any) => item.id === id);
     if (item) {
       const updatedItem = { ...item };
-      // Correction de l'erreur TypeScript ici
-      updatedItem[key as keyof typeof updatedItem] = value;
+      const columnType = columns.find(c => c.key === key)?.type || 'text';
       
+      // Conversion explicite du type
+      if (columnType === 'number') {
+        updatedItem[key as keyof typeof updatedItem] = Number(value);
+      } else {
+        updatedItem[key as keyof typeof updatedItem] = String(value);
+      }
+
       if (type === "impact") {
         const kpi = updatedItem as ImpactKPI;
         const midValue = kpi.minDelta.includes('%')
