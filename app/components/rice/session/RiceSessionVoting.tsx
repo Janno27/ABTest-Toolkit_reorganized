@@ -355,7 +355,7 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
     };
     
     // Remove any existing vote from this user
-    const updatedVotes = votes.filter(vote => vote.participantId !== userForVoting.id);
+    const updatedVotes = votes.filter(vote => vote.participantId !== userForVoting!.id);
     
     // Add the new vote
     const finalVotes = [...updatedVotes, newVote];
