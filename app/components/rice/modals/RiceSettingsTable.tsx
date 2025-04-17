@@ -31,7 +31,7 @@ interface EditableCellProps {
   step?: number;
 }
 
-function EditableCell({ value, onChange, type, min, max, step }: EditableCellProps) {
+function EditableCell({ value, onChange, type = "text", min, max, step }: EditableCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
 
@@ -136,13 +136,14 @@ export function RiceSettingsTable({
     const item = items.find((item: any) => item.id === id);
     if (item) {
       const updatedItem = { ...item };
-      const columnType = columns.find(c => c.key === key)?.type || 'text';
+      const columnDef = columns.find(c => c.key === key);
+      const columnType = (columnDef?.type || 'text') as 'number' | 'text';
       
       // Conversion explicite du type
       if (columnType === 'number') {
-        updatedItem[key as keyof typeof updatedItem] = Number(value);
+        (updatedItem as any)[key] = Number(value);
       } else {
-        updatedItem[key as keyof typeof updatedItem] = String(value);
+        (updatedItem as any)[key] = String(value);
       }
 
       if (type === "impact") {
@@ -187,12 +188,12 @@ export function RiceSettingsTable({
         return (
           <>
             <ReachCategoryModal
-              open={isAddModalOpen}
+              isOpen={isAddModalOpen}
               onClose={() => setIsAddModalOpen(false)}
               onSave={handleAdd}
             />
             <ReachCategoryModal
-              open={isEditModalOpen}
+              isOpen={isEditModalOpen}
               onClose={() => setIsEditModalOpen(false)}
               onSave={handleEdit}
               category={currentItem as ReachCategory}
@@ -203,12 +204,12 @@ export function RiceSettingsTable({
         return (
           <>
             <ImpactKpiModal
-              open={isAddModalOpen}
+              isOpen={isAddModalOpen}
               onClose={() => setIsAddModalOpen(false)}
               onSave={handleAdd}
             />
             <ImpactKpiModal
-              open={isEditModalOpen}
+              isOpen={isEditModalOpen}
               onClose={() => setIsEditModalOpen(false)}
               onSave={handleEdit}
               kpi={currentItem as ImpactKPI}
@@ -219,12 +220,12 @@ export function RiceSettingsTable({
         return (
           <>
             <ConfidenceSourceModal
-              open={isAddModalOpen}
+              isOpen={isAddModalOpen}
               onClose={() => setIsAddModalOpen(false)}
               onSave={handleAdd}
             />
             <ConfidenceSourceModal
-              open={isEditModalOpen}
+              isOpen={isEditModalOpen}
               onClose={() => setIsEditModalOpen(false)}
               onSave={handleEdit}
               source={currentItem as ConfidenceSource}
@@ -235,12 +236,12 @@ export function RiceSettingsTable({
         return (
           <>
             <EffortSizeModal
-              open={isAddModalOpen}
+              isOpen={isAddModalOpen}
               onClose={() => setIsAddModalOpen(false)}
               onSave={handleAdd}
             />
             <EffortSizeModal
-              open={isEditModalOpen}
+              isOpen={isEditModalOpen}
               onClose={() => setIsEditModalOpen(false)}
               onSave={handleEdit}
               size={currentItem as EffortSize}
@@ -287,7 +288,7 @@ export function RiceSettingsTable({
                     <EditableCell
                       value={item[column.key]}
                       onChange={(value) => handleCellChange(item.id, column.key, value)}
-                      type={column.type}
+                      type={(column.type as "text" | "number") || "text"}
                       min={column.min}
                       max={column.max}
                       step={column.step}
