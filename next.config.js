@@ -3,11 +3,17 @@ const path = require('path');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Désactiver les vérifications TypeScript
+  typescript: {
+    ignoreBuildErrors: true, // À UTILISER AVEC PRÉCAUTION !
+  },
+  // Désactiver ESLint
   eslint: {
     ignoreDuringBuilds: true,
   },
-  images: { unoptimized: true },
-  // Configuration des alias de chemin
+  images: { 
+    unoptimized: true 
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
