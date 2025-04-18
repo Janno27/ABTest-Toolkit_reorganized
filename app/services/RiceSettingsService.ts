@@ -50,8 +50,8 @@ class RiceSettingsService {
       const newSettings: RiceSettings = {
         ...settings,
         id: this.generateId(),
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
       
       allSettings.push(newSettings);
@@ -79,7 +79,7 @@ class RiceSettingsService {
       const updatedSettings: RiceSettings = {
         ...allSettings[index],
         ...updates,
-        updatedAt: new Date()
+        updatedAt: new Date().toISOString()
       };
       
       allSettings[index] = updatedSettings;
@@ -101,7 +101,7 @@ class RiceSettingsService {
       const newSettings = allSettings.filter(s => s.id !== id);
       
       if (newSettings.length === allSettings.length) {
-        return false; // Aucun élément n'a été supprimé
+        return false;
       }
       
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(newSettings));
@@ -134,7 +134,7 @@ class RiceSettingsService {
     }
   }
 
-  // OPÉRATIONS SPÉCIFIQUES POUR LES FACTEURS INDIVIDUELS
+  // OPÉRATIONS POUR LES FACTEURS RICE
 
   // Reach Categories
   async addReachCategory(settingsId: string, category: Omit<ReachCategory, 'id'>): Promise<ReachCategory> {
@@ -376,12 +376,11 @@ class RiceSettingsService {
     return true;
   }
 
-  // Utilitaire pour générer un ID unique
+  // Génération d'ID unique
   private generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   }
 }
 
-// Exportation d'une instance unique du service
 export const riceSettingsService = new RiceSettingsService();
-export default riceSettingsService; 
+export default riceSettingsService;
