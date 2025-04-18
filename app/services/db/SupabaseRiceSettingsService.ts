@@ -430,7 +430,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       example: cat.example
     }));
     
-    const { error } = await supabase
+    const { error } = await supabase!
       .from('rice_reach_categories')
       .insert(dbCategories);
       
@@ -452,7 +452,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
     }));
     
     if (parentDbKPIs.length > 0) {
-      const { error } = await supabase
+      const { error } = await supabase!
         .from('rice_impact_kpis')
         .insert(parentDbKPIs);
         
@@ -463,7 +463,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
     const behaviorKPI = parentKPIs.find(kpi => kpi.name === 'Behavior');
     if (behaviorKPI && kpis.some(kpi => kpi.isBehaviorMetric)) {
       // Récupérer l'ID du KPI Behavior
-      const { data: behaviorData, error: behaviorError } = await supabase
+      const { data: behaviorData, error: behaviorError } = await supabase!
         .from('rice_impact_kpis')
         .select('id')
         .eq('settings_id', settingsId)
@@ -487,7 +487,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
         }));
         
         if (behaviorDbKPIs.length > 0) {
-          const { error } = await supabase
+          const { error } = await supabase!
             .from('rice_impact_kpis')
             .insert(behaviorDbKPIs);
             
@@ -505,7 +505,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       example: source.example
     }));
     
-    const { error } = await supabase
+    const { error } = await supabase!
       .from('rice_confidence_sources')
       .insert(dbSources);
       
@@ -522,7 +522,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       example: size.example
     }));
     
-    const { error } = await supabase
+    const { error } = await supabase!
       .from('rice_effort_sizes')
       .insert(dbSizes);
       
@@ -533,7 +533,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
   private async updateReachCategories(settingsId: string, categories: ReachCategory[]): Promise<void> {
     try {
       // Vérifier d'abord si le paramètre RICE existe
-      const { data: settingsData, error: settingsError } = await supabase
+      const { data: settingsData, error: settingsError } = await supabase!
         .from('rice_settings')
         .select('id')
         .eq('id', settingsId)
@@ -544,7 +544,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       }
       
       // Récupérer les catégories existantes
-      const { data: existingCategories, error: categoriesError } = await supabase
+      const { data: existingCategories, error: categoriesError } = await supabase!
         .from('rice_reach_categories')
         .select('id')
         .eq('settings_id', settingsId);
@@ -553,7 +553,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       
       // Supprimer toutes les catégories existantes
       if (existingCategories && existingCategories.length > 0) {
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await supabase!
           .from('rice_reach_categories')
           .delete()
           .eq('settings_id', settingsId);
@@ -574,7 +574,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
   private async updateImpactKPIs(settingsId: string, kpis: ImpactKPI[]): Promise<void> {
     try {
       // Vérifier d'abord si le paramètre RICE existe
-      const { data: settingsData, error: settingsError } = await supabase
+      const { data: settingsData, error: settingsError } = await supabase!
         .from('rice_settings')
         .select('id')
         .eq('id', settingsId)
@@ -585,7 +585,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       }
       
       // Récupérer les KPIs existants
-      const { data: existingKPIs, error: kpisError } = await supabase
+      const { data: existingKPIs, error: kpisError } = await supabase!
         .from('rice_impact_kpis')
         .select('id')
         .eq('settings_id', settingsId);
@@ -594,7 +594,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       
       // Supprimer tous les KPIs existants
       if (existingKPIs && existingKPIs.length > 0) {
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await supabase!
           .from('rice_impact_kpis')
           .delete()
           .eq('settings_id', settingsId);
@@ -615,7 +615,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
   private async updateConfidenceSources(settingsId: string, sources: ConfidenceSource[]): Promise<void> {
     try {
       // Vérifier d'abord si le paramètre RICE existe
-      const { data: settingsData, error: settingsError } = await supabase
+      const { data: settingsData, error: settingsError } = await supabase!
         .from('rice_settings')
         .select('id')
         .eq('id', settingsId)
@@ -626,7 +626,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       }
       
       // Récupérer les sources existantes
-      const { data: existingSources, error: sourcesError } = await supabase
+      const { data: existingSources, error: sourcesError } = await supabase!
         .from('rice_confidence_sources')
         .select('id')
         .eq('settings_id', settingsId);
@@ -635,7 +635,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       
       // Supprimer toutes les sources existantes
       if (existingSources && existingSources.length > 0) {
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await supabase!
           .from('rice_confidence_sources')
           .delete()
           .eq('settings_id', settingsId);
@@ -656,7 +656,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
   private async updateEffortSizes(settingsId: string, sizes: EffortSize[]): Promise<void> {
     try {
       // Vérifier d'abord si le paramètre RICE existe
-      const { data: settingsData, error: settingsError } = await supabase
+      const { data: settingsData, error: settingsError } = await supabase!
         .from('rice_settings')
         .select('id')
         .eq('id', settingsId)
@@ -667,7 +667,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       }
       
       // Récupérer les tailles existantes
-      const { data: existingSizes, error: sizesError } = await supabase
+      const { data: existingSizes, error: sizesError } = await supabase!
         .from('rice_effort_sizes')
         .select('id')
         .eq('settings_id', settingsId);
@@ -676,7 +676,7 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       
       // Supprimer toutes les tailles existantes
       if (existingSizes && existingSizes.length > 0) {
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await supabase!
           .from('rice_effort_sizes')
           .delete()
           .eq('settings_id', settingsId);
@@ -769,6 +769,364 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       confidenceSources,
       effortSizes
     };
+  }
+
+  // Implémentation des méthodes manquantes de l'interface RiceServiceInterface
+
+  // Reach Categories
+  async addReachCategory(settingsId: string, category: Omit<ReachCategory, 'id'>): Promise<ReachCategory> {
+    try {
+      const { id, ...categoryData } = category as any;
+      const dbCategory = {
+        settings_id: settingsId,
+        name: categoryData.name,
+        min_reach: categoryData.minReach,
+        max_reach: categoryData.maxReach,
+        points: categoryData.points,
+        example: categoryData.example
+      };
+      
+      const { data, error } = await supabase!
+        .from('rice_reach_categories')
+        .insert(dbCategory)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      if (!data) throw new Error('Failed to add reach category');
+      
+      return {
+        id: data.id,
+        name: data.name,
+        minReach: data.min_reach,
+        maxReach: data.max_reach,
+        points: data.points,
+        example: data.example
+      };
+    } catch (error) {
+      console.error('Error adding reach category:', error);
+      throw error;
+    }
+  }
+  
+  async updateReachCategory(settingsId: string, categoryId: string, updates: Partial<ReachCategory>): Promise<ReachCategory> {
+    try {
+      const dbUpdates: any = {};
+      
+      if (updates.name) dbUpdates.name = updates.name;
+      if (updates.minReach !== undefined) dbUpdates.min_reach = updates.minReach;
+      if (updates.maxReach !== undefined) dbUpdates.max_reach = updates.maxReach;
+      if (updates.points !== undefined) dbUpdates.points = updates.points;
+      if (updates.example !== undefined) dbUpdates.example = updates.example;
+      
+      const { data, error } = await supabase
+        .from('rice_reach_categories')
+        .update(dbUpdates)
+        .eq('id', categoryId)
+        .eq('settings_id', settingsId)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      if (!data) throw new Error('Failed to update reach category');
+      
+      return {
+        id: data.id,
+        name: data.name,
+        minReach: data.min_reach,
+        maxReach: data.max_reach,
+        points: data.points,
+        example: data.example
+      };
+    } catch (error) {
+      console.error('Error updating reach category:', error);
+      throw error;
+    }
+  }
+  
+  async deleteReachCategory(settingsId: string, categoryId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('rice_reach_categories')
+        .delete()
+        .eq('id', categoryId)
+        .eq('settings_id', settingsId);
+        
+      if (error) throw error;
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting reach category:', error);
+      throw error;
+    }
+  }
+  
+  // Impact KPIs
+  async addImpactKPI(settingsId: string, kpi: Omit<ImpactKPI, 'id'>): Promise<ImpactKPI> {
+    try {
+      const { id, ...kpiData } = kpi as any;
+      const dbKPI = {
+        settings_id: settingsId,
+        name: kpiData.name,
+        min_delta: kpiData.minDelta,
+        max_delta: kpiData.maxDelta,
+        points_per_unit: kpiData.pointsPerUnit,
+        example: kpiData.example,
+        is_behavior_metric: kpiData.isBehaviorMetric || false,
+        parent_kpi_id: kpiData.parentKPI
+      };
+      
+      const { data, error } = await supabase
+        .from('rice_impact_kpis')
+        .insert(dbKPI)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      if (!data) throw new Error('Failed to add impact KPI');
+      
+      return {
+        id: data.id,
+        name: data.name,
+        minDelta: data.min_delta,
+        maxDelta: data.max_delta,
+        pointsPerUnit: data.points_per_unit,
+        example: data.example,
+        isBehaviorMetric: data.is_behavior_metric,
+        parentKPI: data.parent_kpi_id
+      };
+    } catch (error) {
+      console.error('Error adding impact KPI:', error);
+      throw error;
+    }
+  }
+  
+  async updateImpactKPI(settingsId: string, kpiId: string, updates: Partial<ImpactKPI>): Promise<ImpactKPI> {
+    try {
+      const dbUpdates: any = {};
+      
+      if (updates.name) dbUpdates.name = updates.name;
+      if (updates.minDelta !== undefined) dbUpdates.min_delta = updates.minDelta;
+      if (updates.maxDelta !== undefined) dbUpdates.max_delta = updates.maxDelta;
+      if (updates.pointsPerUnit !== undefined) dbUpdates.points_per_unit = updates.pointsPerUnit;
+      if (updates.example !== undefined) dbUpdates.example = updates.example;
+      if (updates.isBehaviorMetric !== undefined) dbUpdates.is_behavior_metric = updates.isBehaviorMetric;
+      if (updates.parentKPI !== undefined) dbUpdates.parent_kpi_id = updates.parentKPI;
+      
+      const { data, error } = await supabase
+        .from('rice_impact_kpis')
+        .update(dbUpdates)
+        .eq('id', kpiId)
+        .eq('settings_id', settingsId)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      if (!data) throw new Error('Failed to update impact KPI');
+      
+      return {
+        id: data.id,
+        name: data.name,
+        minDelta: data.min_delta,
+        maxDelta: data.max_delta,
+        pointsPerUnit: data.points_per_unit,
+        example: data.example,
+        isBehaviorMetric: data.is_behavior_metric,
+        parentKPI: data.parent_kpi_id
+      };
+    } catch (error) {
+      console.error('Error updating impact KPI:', error);
+      throw error;
+    }
+  }
+  
+  async deleteImpactKPI(settingsId: string, kpiId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('rice_impact_kpis')
+        .delete()
+        .eq('id', kpiId)
+        .eq('settings_id', settingsId);
+        
+      if (error) throw error;
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting impact KPI:', error);
+      throw error;
+    }
+  }
+  
+  // Confidence Sources
+  async addConfidenceSource(settingsId: string, source: Omit<ConfidenceSource, 'id'>): Promise<ConfidenceSource> {
+    try {
+      const { id, ...sourceData } = source as any;
+      const dbSource = {
+        settings_id: settingsId,
+        name: sourceData.name,
+        points: sourceData.points,
+        example: sourceData.example,
+        description: sourceData.description
+      };
+      
+      const { data, error } = await supabase
+        .from('rice_confidence_sources')
+        .insert(dbSource)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      if (!data) throw new Error('Failed to add confidence source');
+      
+      return {
+        id: data.id,
+        name: data.name,
+        points: data.points,
+        example: data.example,
+        description: data.description
+      };
+    } catch (error) {
+      console.error('Error adding confidence source:', error);
+      throw error;
+    }
+  }
+  
+  async updateConfidenceSource(settingsId: string, sourceId: string, updates: Partial<ConfidenceSource>): Promise<ConfidenceSource> {
+    try {
+      const dbUpdates: any = {};
+      
+      if (updates.name) dbUpdates.name = updates.name;
+      if (updates.points !== undefined) dbUpdates.points = updates.points;
+      if (updates.example !== undefined) dbUpdates.example = updates.example;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      
+      const { data, error } = await supabase
+        .from('rice_confidence_sources')
+        .update(dbUpdates)
+        .eq('id', sourceId)
+        .eq('settings_id', settingsId)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      if (!data) throw new Error('Failed to update confidence source');
+      
+      return {
+        id: data.id,
+        name: data.name,
+        points: data.points,
+        example: data.example,
+        description: data.description
+      };
+    } catch (error) {
+      console.error('Error updating confidence source:', error);
+      throw error;
+    }
+  }
+  
+  async deleteConfidenceSource(settingsId: string, sourceId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('rice_confidence_sources')
+        .delete()
+        .eq('id', sourceId)
+        .eq('settings_id', settingsId);
+        
+      if (error) throw error;
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting confidence source:', error);
+      throw error;
+    }
+  }
+  
+  // Effort Sizes
+  async addEffortSize(settingsId: string, size: Omit<EffortSize, 'id'>): Promise<EffortSize> {
+    try {
+      const { id, ...sizeData } = size as any;
+      const dbSize = {
+        settings_id: settingsId,
+        name: sizeData.name,
+        duration: sizeData.duration,
+        dev_effort: sizeData.devEffort,
+        design_effort: sizeData.designEffort,
+        example: sizeData.example
+      };
+      
+      const { data, error } = await supabase
+        .from('rice_effort_sizes')
+        .insert(dbSize)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      if (!data) throw new Error('Failed to add effort size');
+      
+      return {
+        id: data.id,
+        name: data.name,
+        duration: data.duration,
+        devEffort: data.dev_effort,
+        designEffort: data.design_effort,
+        example: data.example
+      };
+    } catch (error) {
+      console.error('Error adding effort size:', error);
+      throw error;
+    }
+  }
+  
+  async updateEffortSize(settingsId: string, sizeId: string, updates: Partial<EffortSize>): Promise<EffortSize> {
+    try {
+      const dbUpdates: any = {};
+      
+      if (updates.name) dbUpdates.name = updates.name;
+      if (updates.duration !== undefined) dbUpdates.duration = updates.duration;
+      if (updates.devEffort !== undefined) dbUpdates.dev_effort = updates.devEffort;
+      if (updates.designEffort !== undefined) dbUpdates.design_effort = updates.designEffort;
+      if (updates.example !== undefined) dbUpdates.example = updates.example;
+      
+      const { data, error } = await supabase
+        .from('rice_effort_sizes')
+        .update(dbUpdates)
+        .eq('id', sizeId)
+        .eq('settings_id', settingsId)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      if (!data) throw new Error('Failed to update effort size');
+      
+      return {
+        id: data.id,
+        name: data.name,
+        duration: data.duration,
+        devEffort: data.dev_effort,
+        designEffort: data.design_effort,
+        example: data.example
+      };
+    } catch (error) {
+      console.error('Error updating effort size:', error);
+      throw error;
+    }
+  }
+  
+  async deleteEffortSize(settingsId: string, sizeId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('rice_effort_sizes')
+        .delete()
+        .eq('id', sizeId)
+        .eq('settings_id', settingsId);
+        
+      if (error) throw error;
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting effort size:', error);
+      throw error;
+    }
   }
 }
 

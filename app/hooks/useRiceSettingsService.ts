@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { RiceService } from '../services/RiceService';
-import { SupabaseRiceSettingsService } from '../services/db/SupabaseRiceSettingsService';
+import supabaseRiceSettingsService from '../services/db/SupabaseRiceSettingsService';
 import { RiceServiceInterface } from '../types/RiceServiceTypes';
 
 // Hook personnalisé pour accéder au service RiceSettings approprié
@@ -17,7 +17,7 @@ export function useRiceSettingsService() {
         
         if (useSupabase) {
           console.log('Utilisation de Supabase comme source de données');
-          setService(new SupabaseRiceSettingsService());
+          setService(supabaseRiceSettingsService);
         } else {
           console.log('Utilisation de localStorage comme source de données');
           setService(new RiceService());
