@@ -712,45 +712,57 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
   
   // Méthode pour mapper les données de la base de données au format de l'application
   private mapDbSettingsToApp(dbSettings: any): RiceSettings {
+    console.log('SupabaseRiceSettingsService: Mapping des données', {
+      id: dbSettings.id,
+      categoriesRaw: dbSettings.rice_reach_categories
+    });
+    
     // Mapper les catégories de portée
-    const reachCategories: ReachCategory[] = dbSettings.rice_reach_categories?.map((cat: any) => ({
+    const reachCategories: ReachCategory[] = (dbSettings.rice_reach_categories || []).map((cat: any) => ({
       id: cat.id,
       name: cat.name,
       minReach: cat.min_reach,
       maxReach: cat.max_reach,
       points: cat.points,
       example: cat.example
-    })) || [];
+    }));
     
-    // Mapper les KPIs d'impact
-    const impactKPIs: ImpactKPI[] = dbSettings.rice_impact_kpis?.map((kpi: any) => ({
+    // Mapper les KPIs d'impact, en distinguant les comportementaux des normaux
+    const impactKPIs: ImpactKPI[] = (dbSettings.rice_impact_kpis || []).map((kpi: any) => ({
       id: kpi.id,
       name: kpi.name,
       minDelta: kpi.min_delta,
       maxDelta: kpi.max_delta,
       pointsPerUnit: kpi.points_per_unit,
       example: kpi.example,
-      isBehaviorMetric: kpi.is_behavior_metric,
-      parentKpiId: kpi.parent_kpi_id
-    })) || [];
+      isBehaviorMetric: kpi.is_behavior_metric || false,
+      parentKPI: kpi.parent_kpi_id
+    }));
     
     // Mapper les sources de confiance
-    const confidenceSources: ConfidenceSource[] = dbSettings.rice_confidence_sources?.map((source: any) => ({
+    const confidenceSources: ConfidenceSource[] = (dbSettings.rice_confidence_sources || []).map((source: any) => ({
       id: source.id,
       name: source.name,
       points: source.points,
       example: source.example
-    })) || [];
+    }));
     
     // Mapper les tailles d'effort
-    const effortSizes: EffortSize[] = dbSettings.rice_effort_sizes?.map((size: any) => ({
+    const effortSizes: EffortSize[] = (dbSettings.rice_effort_sizes || []).map((size: any) => ({
       id: size.id,
       name: size.name,
       duration: size.duration,
       devEffort: size.dev_effort,
       designEffort: size.design_effort,
       example: size.example
-    })) || [];
+    }));
+    
+    console.log('SupabaseRiceSettingsService: Données mappées', {
+      reachCategoriesCount: reachCategories.length,
+      impactKPIsCount: impactKPIs.length,
+      confidenceSourcesCount: confidenceSources.length,
+      effortSizesCount: effortSizes.length
+    });
     
     // Retourner les paramètres RICE complets
     return {
@@ -762,6 +774,12 @@ export class SupabaseRiceSettingsService implements RiceServiceInterface {
       impactWeight: dbSettings.impact_weight,
       confidenceWeight: dbSettings.confidence_weight,
       effortWeight: dbSettings.effort_weight,
+      weights: {
+        reach: dbSettings.reach_weight || 30,
+        impact: dbSettings.impact_weight || 30,
+        confidence: dbSettings.confidence_weight || 20,
+        effort: dbSettings.effort_weight || 20
+      },
       createdAt: dbSettings.created_at,
       updatedAt: dbSettings.updated_at,
       reachCategories,

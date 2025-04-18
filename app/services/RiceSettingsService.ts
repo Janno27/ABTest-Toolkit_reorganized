@@ -250,11 +250,15 @@ class RiceSettingsService {
   }
 
   async updateImpactMetric(id: string, updates: Partial<ImpactMetric>) {
-    const settings = await this.getSettings();
+    const settingsList = await this.getAllSettings();
+    if (settingsList.length === 0) throw new Error('No settings found');
+    
+    // Utiliser le premier ensemble de paramètres pour simplifier
+    const settings = settingsList[0];
     
     // Ajout d'une vérification et valeur par défaut
     const impactMetrics = settings.impactMetrics ?? [];
-    const index = impactMetrics.findIndex(m => m.id === id);
+    const index = impactMetrics.findIndex((m: ImpactMetric) => m.id === id);
     
     if (index === -1) {
       throw new Error('Impact metric not found');

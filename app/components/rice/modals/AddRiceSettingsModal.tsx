@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/app/hooks/use-toast";
 import riceService from "@/app/services/RiceService";
-import { createDefaultRiceSettings } from "../../../utils/defaultRiceSettings";
+import { defaultRiceSettings } from "../../../utils/defaultRiceSettings";
 
 interface AddRiceSettingsModalProps {
   isOpen: boolean;
@@ -31,9 +31,9 @@ export function AddRiceSettingsModal({ isOpen, onClose, onSuccess }: AddRiceSett
     
     if (!name.trim()) {
       toast({
-        title: 'Erreur',
-        description: 'Veuillez saisir un nom pour les paramètres RICE',
-        variant: 'destructive',
+        title: "Erreur",
+        description: "Le nom est requis",
+        variant: "destructive"
       });
       return;
     }
@@ -41,23 +41,28 @@ export function AddRiceSettingsModal({ isOpen, onClose, onSuccess }: AddRiceSett
     setIsSubmitting(true);
     
     try {
-      const defaultSettings = createDefaultRiceSettings(name);
-      await riceService.createSettings(defaultSettings);
+      // Créer une copie des paramètres par défaut avec le nom spécifié
+      const { id, createdAt, updatedAt, ...settingsToCreate } = defaultRiceSettings;
+      
+      await riceService.createSettings({
+        ...settingsToCreate,
+        name
+      });
       
       toast({
-        title: 'Succès',
-        description: `Paramètres RICE "${name}" créés avec succès`,
+        title: "Succès",
+        description: `Paramètres "${name}" créés avec succès`,
       });
       
       setName('');
       onSuccess();
       onClose();
     } catch (error) {
-      console.error('Erreur lors de la création des paramètres RICE:', error);
+      console.error("Erreur lors de la création des paramètres RICE:", error);
       toast({
-        title: 'Erreur',
-        description: 'Impossible de créer les paramètres RICE',
-        variant: 'destructive',
+        title: "Erreur",
+        description: "Impossible de créer les paramètres RICE",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
