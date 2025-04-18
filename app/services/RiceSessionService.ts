@@ -7,7 +7,7 @@ import {
   ImpactKPI, 
   ConfidenceSource, 
   EffortSize
-} from './RiceService';
+} from '@/app/types/RiceServiceTypes';
 
 // Types pour les sessions RICE
 export interface RiceSession {

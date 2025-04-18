@@ -8,7 +8,7 @@ import {
   ConfidenceSource, 
   EffortSize,
   ImpactMetric
-} from './RiceService';
+} from '@/app/types/RiceServiceTypes';
 
 // Service d'abstraction pour la gestion des paramètres RICE
 class RiceSettingsService {
