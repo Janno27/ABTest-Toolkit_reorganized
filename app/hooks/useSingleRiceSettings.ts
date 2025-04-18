@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import riceService, { 
-  RiceSettings, 
-  ReachCategory, 
-  ImpactKPI, 
-  ConfidenceSource, 
-  EffortSize,
-  RiceWeights 
-} from '../services/RiceService';
+import riceService from '../services/RiceService';
+import type { 
+  RiceSettings,
+  ReachCategory,
+  ImpactKPI,
+  ConfidenceSource,
+  EffortSize 
+} from '../types/RiceServiceTypes';
 
 export function useSingleRiceSettings(id: string | null) {
   const [settings, setSettings] = useState<RiceSettings | null>(null);
