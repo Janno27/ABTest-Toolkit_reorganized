@@ -146,7 +146,7 @@ class RiceSettingsService {
       id: this.generateId()
     };
     
-    const updatedCategories = [...settings.reachCategories, newCategory];
+    const updatedCategories = [...(settings.reachCategories ?? []), newCategory];
     await this.updateSettings(settingsId, { reachCategories: updatedCategories });
     
     return newCategory;
@@ -156,7 +156,7 @@ class RiceSettingsService {
     const settings = await this.getSettingsById(settingsId);
     if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
     
-    const index = settings.reachCategories.findIndex(c => c.id === categoryId);
+    const index = settings.reachCategories?.findIndex(c => c.id === categoryId) ?? -1;
     if (index === -1) throw new Error(`Category with id ${categoryId} not found`);
     
     const updatedCategory = {
@@ -164,7 +164,7 @@ class RiceSettingsService {
       ...updates
     };
     
-    const updatedCategories = [...settings.reachCategories];
+    const updatedCategories = [...(settings.reachCategories ?? [])];
     updatedCategories[index] = updatedCategory;
     
     await this.updateSettings(settingsId, { reachCategories: updatedCategories });
@@ -175,8 +175,8 @@ class RiceSettingsService {
     const settings = await this.getSettingsById(settingsId);
     if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
     
-    const updatedCategories = settings.reachCategories.filter(c => c.id !== categoryId);
-    if (updatedCategories.length === settings.reachCategories.length) {
+    const updatedCategories = (settings.reachCategories ?? []).filter(c => c.id !== categoryId);
+    if (updatedCategories.length === (settings.reachCategories?.length ?? 0)) {
       return false;
     }
     
@@ -194,7 +194,7 @@ class RiceSettingsService {
       id: this.generateId()
     };
     
-    const updatedKPIs = [...settings.impactKPIs, newKPI];
+    const updatedKPIs = [...(settings.impactKPIs ?? []), newKPI];
     await this.updateSettings(settingsId, { impactKPIs: updatedKPIs });
     
     return newKPI;
@@ -204,7 +204,7 @@ class RiceSettingsService {
     const settings = await this.getSettingsById(settingsId);
     if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
     
-    const index = settings.impactKPIs.findIndex(k => k.id === kpiId);
+    const index = settings.impactKPIs?.findIndex(k => k.id === kpiId) ?? -1;
     if (index === -1) throw new Error(`KPI with id ${kpiId} not found`);
     
     const updatedKPI = {
@@ -212,7 +212,7 @@ class RiceSettingsService {
       ...updates
     };
     
-    const updatedKPIs = [...settings.impactKPIs];
+    const updatedKPIs = [...(settings.impactKPIs ?? [])];
     updatedKPIs[index] = updatedKPI;
     
     await this.updateSettings(settingsId, { impactKPIs: updatedKPIs });
@@ -223,8 +223,8 @@ class RiceSettingsService {
     const settings = await this.getSettingsById(settingsId);
     if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
     
-    const updatedKPIs = settings.impactKPIs.filter(k => k.id !== kpiId);
-    if (updatedKPIs.length === settings.impactKPIs.length) {
+    const updatedKPIs = (settings.impactKPIs ?? []).filter(k => k.id !== kpiId);
+    if (updatedKPIs.length === (settings.impactKPIs?.length ?? 0)) {
       return false;
     }
     
@@ -232,7 +232,7 @@ class RiceSettingsService {
     return true;
   }
 
-  // Impact Metrics
+  // Impact Metrics (corrigé avec opérateur de coalescence)
   async addImpactMetric(settingsId: string, metric: Omit<ImpactMetric, 'id'>): Promise<ImpactMetric> {
     const settings = await this.getSettingsById(settingsId);
     if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
@@ -242,7 +242,8 @@ class RiceSettingsService {
       id: this.generateId()
     };
     
-    const updatedMetrics = [...settings.impactMetrics, newMetric];
+    // Correction avec opérateur de coalescence nullish
+    const updatedMetrics = [...(settings.impactMetrics ?? []), newMetric];
     await this.updateSettings(settingsId, { impactMetrics: updatedMetrics });
     
     return newMetric;
@@ -252,7 +253,7 @@ class RiceSettingsService {
     const settings = await this.getSettingsById(settingsId);
     if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
     
-    const index = settings.impactMetrics.findIndex(m => m.id === metricId);
+    const index = settings.impactMetrics?.findIndex(m => m.id === metricId) ?? -1;
     if (index === -1) throw new Error(`Metric with id ${metricId} not found`);
     
     const updatedMetric = {
@@ -260,7 +261,7 @@ class RiceSettingsService {
       ...updates
     };
     
-    const updatedMetrics = [...settings.impactMetrics];
+    const updatedMetrics = [...(settings.impactMetrics ?? [])];
     updatedMetrics[index] = updatedMetric;
     
     await this.updateSettings(settingsId, { impactMetrics: updatedMetrics });
@@ -271,8 +272,8 @@ class RiceSettingsService {
     const settings = await this.getSettingsById(settingsId);
     if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
     
-    const updatedMetrics = settings.impactMetrics.filter(m => m.id !== metricId);
-    if (updatedMetrics.length === settings.impactMetrics.length) {
+    const updatedMetrics = (settings.impactMetrics ?? []).filter(m => m.id !== metricId);
+    if (updatedMetrics.length === (settings.impactMetrics?.length ?? 0)) {
       return false;
     }
     
@@ -290,7 +291,7 @@ class RiceSettingsService {
       id: this.generateId()
     };
     
-    const updatedSources = [...settings.confidenceSources, newSource];
+    const updatedSources = [...(settings.confidenceSources ?? []), newSource];
     await this.updateSettings(settingsId, { confidenceSources: updatedSources });
     
     return newSource;
@@ -300,7 +301,7 @@ class RiceSettingsService {
     const settings = await this.getSettingsById(settingsId);
     if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
     
-    const index = settings.confidenceSources.findIndex(s => s.id === sourceId);
+    const index = settings.confidenceSources?.findIndex(s => s.id === sourceId) ?? -1;
     if (index === -1) throw new Error(`Source with id ${sourceId} not found`);
     
     const updatedSource = {
@@ -308,7 +309,7 @@ class RiceSettingsService {
       ...updates
     };
     
-    const updatedSources = [...settings.confidenceSources];
+    const updatedSources = [...(settings.confidenceSources ?? [])];
     updatedSources[index] = updatedSource;
     
     await this.updateSettings(settingsId, { confidenceSources: updatedSources });
@@ -319,8 +320,8 @@ class RiceSettingsService {
     const settings = await this.getSettingsById(settingsId);
     if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
     
-    const updatedSources = settings.confidenceSources.filter(s => s.id !== sourceId);
-    if (updatedSources.length === settings.confidenceSources.length) {
+    const updatedSources = (settings.confidenceSources ?? []).filter(s => s.id !== sourceId);
+    if (updatedSources.length === (settings.confidenceSources?.length ?? 0)) {
       return false;
     }
     
@@ -338,7 +339,7 @@ class RiceSettingsService {
       id: this.generateId()
     };
     
-    const updatedSizes = [...settings.effortSizes, newSize];
+    const updatedSizes = [...(settings.effortSizes ?? []), newSize];
     await this.updateSettings(settingsId, { effortSizes: updatedSizes });
     
     return newSize;
@@ -348,7 +349,7 @@ class RiceSettingsService {
     const settings = await this.getSettingsById(settingsId);
     if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
     
-    const index = settings.effortSizes.findIndex(s => s.id === sizeId);
+    const index = settings.effortSizes?.findIndex(s => s.id === sizeId) ?? -1;
     if (index === -1) throw new Error(`Size with id ${sizeId} not found`);
     
     const updatedSize = {
@@ -356,7 +357,7 @@ class RiceSettingsService {
       ...updates
     };
     
-    const updatedSizes = [...settings.effortSizes];
+    const updatedSizes = [...(settings.effortSizes ?? [])];
     updatedSizes[index] = updatedSize;
     
     await this.updateSettings(settingsId, { effortSizes: updatedSizes });
@@ -367,8 +368,8 @@ class RiceSettingsService {
     const settings = await this.getSettingsById(settingsId);
     if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
     
-    const updatedSizes = settings.effortSizes.filter(s => s.id !== sizeId);
-    if (updatedSizes.length === settings.effortSizes.length) {
+    const updatedSizes = (settings.effortSizes ?? []).filter(s => s.id !== sizeId);
+    if (updatedSizes.length === (settings.effortSizes?.length ?? 0)) {
       return false;
     }
     
