@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import riceService from '../services/RiceService';
 import type { 
   RiceSettings,
+  RiceWeights,
   ReachCategory,
   ImpactKPI,
   ConfidenceSource,

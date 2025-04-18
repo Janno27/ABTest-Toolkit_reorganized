@@ -4,6 +4,7 @@ export interface RiceWeights {
   impact: number;
   confidence: number;
   effort: number;
+  [key: string]: number; // Pour l'accès via des clés dynamiques
 }
 
 export interface ReachCategory {
