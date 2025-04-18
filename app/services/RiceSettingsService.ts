@@ -249,23 +249,31 @@ class RiceSettingsService {
     return newMetric;
   }
 
-  async updateImpactMetric(settingsId: string, metricId: string, updates: Partial<ImpactMetric>): Promise<ImpactMetric> {
-    const settings = await this.getSettingsById(settingsId);
-    if (!settings) throw new Error(`Settings with id ${settingsId} not found`);
+  async updateImpactMetric(id: string, updates: Partial<ImpactMetric>) {
+    const settings = await this.getSettings();
     
-    const index = settings.impactMetrics?.findIndex(m => m.id === metricId) ?? -1;
-    if (index === -1) throw new Error(`Metric with id ${metricId} not found`);
+    // Ajout d'une vérification et valeur par défaut
+    const impactMetrics = settings.impactMetrics ?? [];
+    const index = impactMetrics.findIndex(m => m.id === id);
     
+    if (index === -1) {
+      throw new Error('Impact metric not found');
+    }
+  
+    // Création de la métrique mise à jour avec vérification de l'index
     const updatedMetric = {
-      ...settings.impactMetrics[index],
+      ...impactMetrics[index], // Accès sécurisé avec impactMetrics garanti d'être un tableau
       ...updates
     };
-    
-    const updatedMetrics = [...(settings.impactMetrics ?? [])];
-    updatedMetrics[index] = updatedMetric;
-    
-    await this.updateSettings(settingsId, { impactMetrics: updatedMetrics });
-    return updatedMetric;
+  
+    // Mise à jour du tableau
+    const updatedMetrics = [
+      ...impactMetrics.slice(0, index),
+      updatedMetric,
+      ...impactMetrics.slice(index + 1)
+    ];
+  
+    await this.updateSettings(settings.id, { impactMetrics: updatedMetrics });
   }
 
   async deleteImpactMetric(settingsId: string, metricId: string): Promise<boolean> {
