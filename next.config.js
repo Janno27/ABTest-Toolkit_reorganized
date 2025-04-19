@@ -22,6 +22,8 @@ const nextConfig = {
       '@/hooks': path.resolve(__dirname, './app/hooks'),
       '@/services': path.resolve(__dirname, './app/services'),
       '@/utils': path.resolve(__dirname, './app/utils'),
+      '@/public': path.resolve(__dirname, './public'), // {{Add public alias}}
+      '@/types': path.resolve(__dirname, './app/types') // {{Add types alias}}
     };
     return config;
   },

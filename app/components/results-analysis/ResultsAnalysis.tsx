@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react"; // Added useMemo
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Plus, Upload, X, Check, Info, ChevronRight, BarChart3 } from "lucide-react";
+import { ArrowLeft, Plus, Upload, X, Check, Info, ChevronRight, BarChart3, Edit2 } from "lucide-react"; // Added Edit2
 import { motion } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";

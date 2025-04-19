@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 import { Trash2, Clock, ArrowRight } from "lucide-react";
@@ -10,15 +9,11 @@ import localStorageService, { AnalysisResult } from "./localStorageService";
 
 interface RecentAnalysesProps {
   onSelect: (analysis: AnalysisResult) => void;
+  analyses: AnalysisResult[]; 
+  setAnalyses: React.Dispatch<React.SetStateAction<AnalysisResult[]>>; 
 }
 
-export default function RecentAnalyses({ onSelect }: RecentAnalysesProps) {
-  const [analyses, setAnalyses] = useState<AnalysisResult[]>([]);
-
-  useEffect(() => {
-    const storedAnalyses = localStorageService.getAnalyses();
-    setAnalyses(storedAnalyses);
-  }, []);
+export default function RecentAnalyses({ onSelect, analyses = [], setAnalyses }: RecentAnalysesProps) {
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
