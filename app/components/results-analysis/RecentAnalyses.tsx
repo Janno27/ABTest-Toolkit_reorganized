@@ -7,10 +7,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import localStorageService, { AnalysisResult } from "./localStorageService";
 
-interface RecentAnalysesProps {
+export interface RecentAnalysesProps {
+  analyses: AnalysisResult[];
+  setAnalyses: React.Dispatch<React.SetStateAction<AnalysisResult[]>>;
   onSelect: (analysis: AnalysisResult) => void;
-  analyses: AnalysisResult[]; 
-  setAnalyses: React.Dispatch<React.SetStateAction<AnalysisResult[]>>; 
 }
 
 export default function RecentAnalyses({ onSelect, analyses = [], setAnalyses }: RecentAnalysesProps) {

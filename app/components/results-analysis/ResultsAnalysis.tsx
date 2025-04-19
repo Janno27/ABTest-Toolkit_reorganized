@@ -488,7 +488,11 @@ export default function ResultsAnalysis() {
 
               <NewAnalysisForm onAnalysisCreated={handleAnalysisCreated} />
               
-              <RecentAnalyses onSelect={handleAnalysisSelected} />
+              <RecentAnalyses 
+                analyses={analyses} 
+                setAnalyses={setAnalyses}
+                onSelect={handleAnalysisSelected}
+              />
             </div>
           </Card>
         </div>
