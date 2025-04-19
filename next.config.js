@@ -2,8 +2,6 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  cacheHandler: require.resolve('./cache-handler.js'),
-  cacheMaxMemorySize: 0,
   reactStrictMode: true,
   output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
 
