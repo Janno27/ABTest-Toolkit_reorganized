@@ -31,8 +31,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
 import { Switch } from "@/components/ui/switch";
-import { ResultsAnalysis } from "./components/results-analysis";
-import { PrioritizationTool } from "./components/results-analysis";
+import { ResultsAnalysis } from "@/app/components/results-analysis/ResultsAnalysis"; // Using direct path for certainty
+import { PrioritizationTool } from "@/app/components/rice/modals/PrioritizationTool"; // Corrected path
 
 export default function Home() {
   const [visits, setVisits] = useState("");
