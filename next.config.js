@@ -2,14 +2,11 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  cacheHandler: require.resolve('./cache-handler.js'),
+  cacheMaxMemorySize: 0,
   reactStrictMode: true,
-  typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
-    ignoreBuildErrors: true,
-  },
+  output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
+
   eslint: {
     ignoreDuringBuilds: true,
   },
