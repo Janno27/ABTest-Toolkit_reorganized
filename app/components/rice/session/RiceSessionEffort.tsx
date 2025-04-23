@@ -55,7 +55,7 @@ const mapEffortSize = (effortSize: SupabaseEffortSize): EffortSize => {
   if (effortSize.name.includes("Extra Small") || effortSize.name.includes("XS")) size = "XS";
   else if (effortSize.name.includes("Small") || effortSize.name.includes("S")) size = "S";
   else if (effortSize.name.includes("Medium") || effortSize.name.includes("M")) size = "M";
-  else if (effortSize.name.includes("Large") || effortSize.name.includes("L")) size = "L";
+  else if (effortSize.name.includes("Large") && !effortSize.name.includes("Extra") && !effortSize.name.includes("XL")) size = "L";
   else if (effortSize.name.includes("Extra Large") || effortSize.name.includes("XL")) size = "XL";
 
   return {
@@ -160,11 +160,11 @@ export default function RiceSessionEffort({ sessionId, onBack, onNext }: RiceSes
           } else {
             console.warn('RiceSessionEffort: Aucune taille d\'effort trouvée dans Supabase, utilisation des valeurs par défaut');
             const defaultEffortSizes: EffortSize[] = [
-              { id: "es1", name: "Extra Small", size: "XS", devEffort: 0.3, designEffort: 0.2, duration: "0-1 week", example: "Minor CSS modification" },
-              { id: "es2", name: "Small", size: "S", devEffort: 0.5, designEffort: 0.3, duration: "1-2 weeks", example: "New tracking integration" },
-              { id: "es3", name: "Medium", size: "M", devEffort: 0.8, designEffort: 0.5, duration: "2-4 weeks", example: "PDP module redesign" },
-              { id: "es4", name: "Large", size: "L", devEffort: 1.2, designEffort: 0.8, duration: "4-6 weeks", example: "Checkout revamp" },
-              { id: "es5", name: "Extra Large", size: "XL", devEffort: 1.5, designEffort: 1.2, duration: "6-8 weeks", example: "Payment API migration" }
+              { id: "es1", name: "Extra Small", size: "xs", devEffort: 0.3, designEffort: 0.2, duration: "0-1 week", example: "Minor CSS modification" },
+              { id: "es2", name: "Small", size: "s", devEffort: 0.5, designEffort: 0.3, duration: "1-2 weeks", example: "New tracking integration" },
+              { id: "es3", name: "Medium", size: "m", devEffort: 0.8, designEffort: 0.5, duration: "2-4 weeks", example: "PDP module redesign" },
+              { id: "es4", name: "Large", size: "l", devEffort: 1.2, designEffort: 0.8, duration: "4-6 weeks", example: "Checkout revamp" },
+              { id: "es5", name: "Extra Large", size: "xl", devEffort: 1.5, designEffort: 1.2, duration: "6-8 weeks", example: "Payment API migration" }
             ];
             setEffortSizes(defaultEffortSizes);
           }
@@ -172,11 +172,11 @@ export default function RiceSessionEffort({ sessionId, onBack, onNext }: RiceSes
       } catch (error) {
         console.error('RiceSessionEffort: Erreur lors du chargement des tailles d\'effort:', error);
         const defaultEffortSizes: EffortSize[] = [
-          { id: "es1", name: "Extra Small", size: "XS", devEffort: 0.3, designEffort: 0.2, duration: "0-1 week", example: "Minor CSS modification" },
-          { id: "es2", name: "Small", size: "S", devEffort: 0.5, designEffort: 0.3, duration: "1-2 weeks", example: "New tracking integration" },
-          { id: "es3", name: "Medium", size: "M", devEffort: 0.8, designEffort: 0.5, duration: "2-4 weeks", example: "PDP module redesign" },
-          { id: "es4", name: "Large", size: "L", devEffort: 1.2, designEffort: 0.8, duration: "4-6 weeks", example: "Checkout revamp" },
-          { id: "es5", name: "Extra Large", size: "XL", devEffort: 1.5, designEffort: 1.2, duration: "6-8 weeks", example: "Payment API migration" }
+          { id: "es1", name: "Extra Small", size: "xs", devEffort: 0.3, designEffort: 0.2, duration: "0-1 week", example: "Minor CSS modification" },
+          { id: "es2", name: "Small", size: "s", devEffort: 0.5, designEffort: 0.3, duration: "1-2 weeks", example: "New tracking integration" },
+          { id: "es3", name: "Medium", size: "m", devEffort: 0.8, designEffort: 0.5, duration: "2-4 weeks", example: "PDP module redesign" },
+          { id: "es4", name: "Large", size: "l", devEffort: 1.2, designEffort: 0.8, duration: "4-6 weeks", example: "Checkout revamp" },
+          { id: "es5", name: "Extra Large", size: "xl", devEffort: 1.5, designEffort: 1.2, duration: "6-8 weeks", example: "Payment API migration" }
         ];
         setEffortSizes(defaultEffortSizes);
       } finally {

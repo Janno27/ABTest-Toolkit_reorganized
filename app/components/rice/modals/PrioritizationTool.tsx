@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Settings, ArrowRight, Trash2, Calendar, Loader2, Share2 } from "lucide-react";
+import { Settings, ArrowRight, Trash2, Calendar, Loader2, Share2, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { RiceSettingsModal } from "./RiceSettingsModal";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,10 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "@/app/lib/supabase";
 import { useToast } from "@/app/hooks/use-toast";
 import supabaseRiceSessionService from "../../../services/db/SupabaseRiceSessionService";
+import AirtableRecordSelector from "../AirtableRecordSelector";
+import { AirtableRecord } from "@/app/services/AirtableService";
+import { Separator } from "../../../../components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function PrioritizationTool() {
   const router = useRouter();
@@ -105,6 +109,11 @@ export default function PrioritizationTool() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleAirtableRecordSelected = (record: AirtableRecord) => {
+    // Mettre à jour le nom de session avec le nom du record Airtable
+    setSessionName(record.name);
   };
 
   const deleteSession = async (id: string, e: React.MouseEvent) => {
@@ -244,6 +253,40 @@ export default function PrioritizationTool() {
                       </>
                     )}
                   </Button>
+                </div>
+                
+                <div className="mt-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Separator className="flex-1" />
+                    <span className="text-xs text-muted-foreground font-medium">OR</span>
+                    <Separator className="flex-1" />
+                  </div>
+                  
+                  <Label htmlFor="airtable-record" className="block text-sm font-medium mb-2">Select from Airtable</Label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <AirtableRecordSelector onSelectRecord={handleAirtableRecordSelected} />
+                    </div>
+                    <Button 
+                      onClick={handleCreateSession} 
+                      disabled={!sessionName.trim() || isLoading} 
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-1"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Creating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Create session</span>
+                          <ArrowRight className="h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
               
