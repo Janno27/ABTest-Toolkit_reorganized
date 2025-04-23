@@ -76,6 +76,7 @@ export default function RiceSessionEffort({ sessionId, onBack, onNext }: RiceSes
   const [voteSubmitted, setVoteSubmitted] = useState<boolean>(false);
   const [hasVoted, setHasVoted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isHost, setIsHost] = useState<boolean>(false);
   
   const { service, isLoading: isServiceLoading, error: serviceError } = useRiceSettingsService();
   const { toast } = useToast();
@@ -83,12 +84,66 @@ export default function RiceSessionEffort({ sessionId, onBack, onNext }: RiceSes
   useEffect(() => {
     const storedUser = localStorage.getItem(`rice_session_${sessionId}_user`);
     if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        console.log('RiceSessionEffort: User loaded from localStorage:', parsedUser);
+        setCurrentUser(parsedUser);
+      } catch (error) {
+        console.error('RiceSessionEffort: Error parsing user data:', error);
+      }
     }
     
-    const storedParticipants = localStorage.getItem(`rice_session_${sessionId}_participants`);
+    // Récupérer directement le statut d'hôte depuis localStorage
+    try {
+      const storedIsHost = localStorage.getItem(`rice_session_${sessionId}_is_host`);
+      if (storedIsHost !== null) {
+        const isUserHost = JSON.parse(storedIsHost);
+        console.log('RiceSessionEffort: Host status loaded from localStorage:', isUserHost);
+        setIsHost(isUserHost);
+      } else if (currentUser) {
+        // Tentative de détection du statut d'hôte à partir du rôle
+        console.log('RiceSessionEffort: Falling back to role detection, role is:', currentUser.role);
+        // Convertir en string pour plus de sécurité dans la comparaison
+        const role = String(currentUser.role).toLowerCase();
+        const isUserHost = role === "host" || role === "facilitator";
+        console.log('RiceSessionEffort: Setting host status based on role check:', isUserHost);
+        
+        // Sauvegarder ce statut dans localStorage pour les prochains accès
+        localStorage.setItem(`rice_session_${sessionId}_is_host`, JSON.stringify(isUserHost));
+        
+        setIsHost(isUserHost);
+      }
+    } catch (error) {
+      console.error('RiceSessionEffort: Error loading host status:', error);
+    }
+    
+    // Utiliser uniquement les participants stockés dans localStorage au lieu d'appeler Supabase
+    const storedParticipantCount = localStorage.getItem(`rice_session_${sessionId}_participant_count`);
+    const storedParticipants = localStorage.getItem(`rice_session_${sessionId}_final_participants`);
+    
     if (storedParticipants) {
-      setParticipants(JSON.parse(storedParticipants));
+      try {
+        const parsedParticipants = JSON.parse(storedParticipants);
+        console.log('RiceSessionEffort: Participants chargés depuis localStorage:', parsedParticipants);
+        setParticipants(parsedParticipants);
+      } catch (error) {
+        console.error('RiceSessionEffort: Erreur lors du parsing des participants:', error);
+      }
+    }
+    
+    // Afficher le nombre de participants même si la liste n'est pas disponible
+    if (storedParticipantCount) {
+      try {
+        const count = parseInt(storedParticipantCount, 10);
+        if (isNaN(count)) {
+          console.warn('RiceSessionEffort: Le nombre de participants stocké n\'est pas un nombre valide');
+        } else if (participants.length === 0) {
+          // Créer des participants fictifs si nécessaire pour l'affichage du nombre
+          console.log(`RiceSessionEffort: Utilisation du nombre de participants stocké: ${count}`);
+        }
+      } catch (error) {
+        console.error('RiceSessionEffort: Erreur lors du parsing du nombre de participants:', error);
+      }
     }
     
     const fetchEffortSizes = async () => {
@@ -146,18 +201,7 @@ export default function RiceSessionEffort({ sessionId, onBack, onNext }: RiceSes
         }
       }
     }
-    
-    const interval = setInterval(() => {
-      const storedVotes = localStorage.getItem(`rice_session_${sessionId}_effort_votes`);
-      if (storedVotes) {
-        setVotes(JSON.parse(storedVotes));
-      }
-    }, 5000);
-    
-    return () => {
-      clearInterval(interval);
-    };
-  }, [sessionId, service, currentUser?.id]);
+  }, [sessionId, service, currentUser?.id, participants.length]);
   
   useEffect(() => {
     if (currentUser) {
@@ -268,7 +312,6 @@ export default function RiceSessionEffort({ sessionId, onBack, onNext }: RiceSes
     }, 2000);
   };
   
-  const isHost = currentUser?.role === "host";
   const devSizeDetails = getSelectedSizeDetails(devSize);
   const designSizeDetails = getSelectedSizeDetails(designSize);
   const totalEffortScore = getTotalEffortScore();
@@ -313,6 +356,39 @@ export default function RiceSessionEffort({ sessionId, onBack, onNext }: RiceSes
   const devVoteStats = getVoteStats("dev");
   const designVoteStats = getVoteStats("design");
   
+  // Optimisation du polling pour vérifier le statut uniquement si le participant a voté
+  // Vérification du statut de la session pour forcer le passage à Results si l'hôte l'a demandé
+  useEffect(() => {
+    // Uniquement pour les participants (pas l'hôte) ET uniquement après avoir voté
+    if (!isHost && hasVoted) {
+      console.log("Participant a voté, démarrage du polling pour vérifier le statut de la session");
+      
+      const checkSessionStatus = async () => {
+        try {
+          const session = await supabaseRiceSessionService.getSessionById(sessionId);
+          if (session && session.status === 'completed') {
+            console.log("Force transition to Results as host initiated session completion");
+            onNext();
+          }
+        } catch (error) {
+          console.error("Error checking session status:", error);
+        }
+      };
+
+      // Vérifier au chargement du composant
+      checkSessionStatus();
+
+      // Puis mettre en place un polling moins fréquent pour vérifier les changements
+      const intervalId = setInterval(checkSessionStatus, 5000);
+      return () => clearInterval(intervalId);
+    }
+  }, [sessionId, isHost, onNext, hasVoted]);
+  
+  // Déboguer les changements de statut d'hôte
+  useEffect(() => {
+    console.log('RiceSessionEffort: isHost changed to:', isHost);
+  }, [isHost]);
+  
   return (
     <Card className="p-6 max-w-3xl mx-auto">
       <div className="space-y-6">
@@ -324,18 +400,13 @@ export default function RiceSessionEffort({ sessionId, onBack, onNext }: RiceSes
         </div>
         
         <div className="flex items-center justify-between">
-          <div className="flex items-center text-sm">
-            <Users className="h-4 w-4 mr-1" />
-            <span>{participants.length} Participants</span>
-          </div>
-          
           {isHost && (
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => setShowVotes(!showVotes)}
               disabled={!canRevealVotes() && !showVotes}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 ml-auto"
             >
               {showVotes ? (
                 <>
@@ -616,31 +687,44 @@ export default function RiceSessionEffort({ sessionId, onBack, onNext }: RiceSes
           <Button variant="outline" onClick={onBack}>
             Back
           </Button>
-          <Button 
-            onClick={() => {
-              // Calculer et enregistrer les résultats RICE avant de passer à l'étape suivante
-              if (isHost && showVotes) {
+          
+          {/* Afficher le bouton Next Step uniquement pour l'hôte */}
+          {isHost && (
+            <Button 
+              onClick={async () => {
+                console.log('RiceSessionEffort: Next Step button clicked, isHost=', isHost);
                 try {
-                  // Appel à Supabase pour calculer le score RICE
-                  supabaseRiceSessionService.calculateAndSaveRiceScore(sessionId)
-                    .then((riceScores) => {
-                      console.log("Score RICE calculé avec Supabase:", riceScores);
-                    })
-                    .catch((error) => {
-                      console.error("Erreur lors du calcul du score RICE avec Supabase:", error);
-                    });
+                  // Calculer et enregistrer les résultats RICE avant de passer à l'étape suivante
+                  try {
+                    // Appel à Supabase pour calculer le score RICE
+                    const riceScores = await supabaseRiceSessionService.calculateAndSaveRiceScore(sessionId);
+                    console.log("Score RICE calculé avec Supabase:", riceScores);
+                  } catch (error) {
+                    console.error("Erreur lors du calcul du score RICE avec Supabase:", error);
+                  }
+                  
+                  // Mettre à jour le statut de la session pour forcer tous les participants à passer à Results
+                  await supabaseRiceSessionService.updateSessionStatus(sessionId, 'completed');
+                  console.log("Statut de session mis à jour: 'completed'");
+                  
+                  // Passer à l'étape suivante pour l'hôte
+                  onNext();
                 } catch (error) {
-                  console.error("Erreur lors de l'appel au calcul du score RICE:", error);
+                  console.error("Erreur lors de la mise à jour du statut de la session:", error);
+                  toast({
+                    title: "Error",
+                    description: "Failed to update session status",
+                    variant: "destructive"
+                  });
                 }
-              }
-              
-              // Passer à l'étape suivante
-              onNext();
-            }}
-            disabled={!devSize || !designSize || !hasVoted}
-          >
-            Next Step
-          </Button>
+              }}
+              // Activer le bouton pour l'hôte seulement après qu'il ait voté
+              disabled={!hasVoted}
+              className={hasVoted ? "bg-primary hover:bg-primary/90" : "opacity-50"}
+            >
+              Next Step
+            </Button>
+          )}
         </div>
       </div>
     </Card>

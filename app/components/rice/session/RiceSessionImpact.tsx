@@ -38,7 +38,7 @@ export default function RiceSessionImpact({ sessionId, onBack, onNext }: RiceSes
   const [currentUser, setCurrentUser] = useState<Participant | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [votes, setVotes] = useState<MetricVote[]>([]);
-  const [showVotes, setShowVotes] = useState(false);
+  const [showAllVotes, setShowAllVotes] = useState(false);
   const [impactKPIs, setImpactKPIs] = useState<ImpactKPI[]>([]);
   const [voteSubmitted, setVoteSubmitted] = useState<boolean>(false);
   const [hasVoted, setHasVoted] = useState(false);
@@ -64,10 +64,30 @@ export default function RiceSessionImpact({ sessionId, onBack, onNext }: RiceSes
       setCurrentUser(JSON.parse(storedUser));
     }
     
-    // Get participants
-    const storedParticipants = localStorage.getItem(`rice_session_${sessionId}_participants`);
+    // Charger les participants depuis localStorage uniquement
+    const storedParticipants = localStorage.getItem(`rice_session_${sessionId}_final_participants`);
     if (storedParticipants) {
-      setParticipants(JSON.parse(storedParticipants));
+      try {
+        const parsedParticipants = JSON.parse(storedParticipants);
+        console.log('RiceSessionImpact: Participants chargés depuis localStorage:', parsedParticipants);
+        setParticipants(parsedParticipants);
+      } catch (error) {
+        console.error('RiceSessionImpact: Erreur lors du parsing des participants depuis localStorage:', error);
+      }
+    }
+    
+    // Si le nombre de participants est stocké mais pas la liste, l'utiliser pour l'affichage
+    const storedParticipantCount = localStorage.getItem(`rice_session_${sessionId}_participant_count`);
+    if (storedParticipantCount && (!storedParticipants || participants.length === 0)) {
+      try {
+        const count = parseInt(storedParticipantCount, 10);
+        if (!isNaN(count)) {
+          console.log(`RiceSessionImpact: Utilisation du nombre de participants stocké: ${count}`);
+          // On peut créer des participants fictifs si nécessaire ici
+        }
+      } catch (error) {
+        console.error('RiceSessionImpact: Erreur lors du parsing du nombre de participants:', error);
+      }
     }
     
     // Récupérer les KPIs d'impact depuis Supabase
@@ -136,21 +156,11 @@ export default function RiceSessionImpact({ sessionId, onBack, onNext }: RiceSes
 
   // Simulate real-time updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Update votes
-      const storedVotes = localStorage.getItem(`rice_session_${sessionId}_impact_votes`);
-      if (storedVotes) {
-        setVotes(JSON.parse(storedVotes));
-      }
-      
-      // Update participants
-      const storedParticipants = localStorage.getItem(`rice_session_${sessionId}_participants`);
-      if (storedParticipants) {
-        setParticipants(JSON.parse(storedParticipants));
-      }
-    }, 2000);
-    
-    return () => clearInterval(interval);
+    // Charger les votes initiaux une seule fois
+    const storedVotes = localStorage.getItem(`rice_session_${sessionId}_impact_votes`);
+    if (storedVotes) {
+      setVotes(JSON.parse(storedVotes));
+    }
   }, [sessionId]);
 
   const handleAddMetric = () => {
@@ -663,25 +673,20 @@ export default function RiceSessionImpact({ sessionId, onBack, onNext }: RiceSes
         <div>
           <h2 className="text-xl font-semibold leading-tight mb-1">Impact Evaluation</h2>
           <p className="text-sm text-muted-foreground">
-            What effect will this feature have on key metrics? Select up to 3 metrics and estimate their uplift.
+            How much will this feature move your key metrics? Add and rate expected impact on KPIs.
           </p>
         </div>
         
         <div className="flex items-center justify-between">
-          <div className="flex items-center text-sm">
-            <Users className="h-4 w-4 mr-1" />
-            <span>{participants.length} Participants</span>
-          </div>
-          
           {isHost && (
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => setShowVotes(!showVotes)}
-              disabled={!canRevealVotes() && !showVotes}
-              className="flex items-center gap-1"
+              onClick={() => setShowAllVotes(!showAllVotes)}
+              disabled={!canRevealVotes() && !showAllVotes}
+              className="flex items-center gap-1 ml-auto"
             >
-              {showVotes ? (
+              {showAllVotes ? (
                 <>
                   <EyeOff className="h-4 w-4 mr-1" />
                   <span>Hide Votes</span>
@@ -756,7 +761,7 @@ export default function RiceSessionImpact({ sessionId, onBack, onNext }: RiceSes
                       <span className="text-sm font-medium">
                         {formatExpectedValue(metric, value)}
                       </span>
-                      {showVotes && (
+                      {showAllVotes && (
                         <span className="ml-2 text-xs text-muted-foreground">
                           ({getMetricPoints(metric, value)} points)
                         </span>
@@ -840,7 +845,7 @@ export default function RiceSessionImpact({ sessionId, onBack, onNext }: RiceSes
           </div>
         </div>
         
-        {showVotes && (
+        {showAllVotes && (
           <div className="bg-muted/30 rounded-md p-4">
             <h3 className="font-medium mb-2">Summary</h3>
             
@@ -875,7 +880,7 @@ export default function RiceSessionImpact({ sessionId, onBack, onNext }: RiceSes
           
           <Button 
             onClick={onNext}
-            disabled={userMetrics.length === 0 || !hasVoted}
+            disabled={!hasVoted && !isHost}
             className="flex items-center gap-1"
           >
             <span>Next Step</span>

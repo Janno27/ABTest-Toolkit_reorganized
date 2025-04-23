@@ -50,9 +50,35 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
     const loadSessionData = async () => {
       setIsLoading(true);
       try {
-        // Load session data from Supabase
-        const session = await supabaseRiceSessionService.getSessionById(sessionId);
-        if (!session) {
+        // Charger les participants uniquement depuis localStorage
+        const finalParticipants = localStorage.getItem(`rice_session_${sessionId}_final_participants`);
+        if (finalParticipants) {
+          try {
+            const parsedParticipants = JSON.parse(finalParticipants);
+            console.log("RiceSessionVoting: Using participants list from localStorage:", parsedParticipants);
+            setParticipants(parsedParticipants);
+          } catch (e) {
+            console.error("Error parsing final participants:", e);
+          }
+        } else {
+          // Si aucun participant n'est trouvé dans localStorage, utiliser le nombre stocké
+          const storedParticipantCount = localStorage.getItem(`rice_session_${sessionId}_participant_count`);
+          if (storedParticipantCount) {
+            try {
+              const count = parseInt(storedParticipantCount, 10);
+              if (!isNaN(count)) {
+                console.log(`RiceSessionVoting: Using stored participant count: ${count}`);
+                // Si nécessaire, créer des participants fictifs pour l'affichage
+              }
+            } catch (e) {
+              console.error("Error parsing participant count:", e);
+            }
+          }
+        }
+        
+        // Charger la session pour les autres données SAUF les participants
+        const sessionData = await supabaseRiceSessionService.getSessionById(sessionId);
+        if (!sessionData) {
           toast({
             title: "Error",
             description: "Could not find session data",
@@ -61,10 +87,7 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
           return;
         }
         
-        console.log("Session loaded:", session);
-        
-        // Set participants from session data
-        setParticipants(session.participants || []);
+        console.log("Session data loaded (without participants):", sessionData);
         
         // Get the current user from localStorage
         // Try different localStorage keys that might contain user info
@@ -113,8 +136,9 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
         }
         
         // If we found a user ID but not the data, try to find it in participants
-        if (currentUserId && !currentUserData && session.participants) {
-          const foundUser = session.participants.find(p => p.id === currentUserId);
+        const participantsArray = sessionData.participants || [];
+        if (currentUserId && !currentUserData && participantsArray.length > 0) {
+          const foundUser = participantsArray.find((p: any) => p.id === currentUserId);
           if (foundUser) {
             currentUserData = foundUser;
             console.log("Found user in participants:", foundUser);
@@ -125,10 +149,10 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
         if (currentUserData) {
           console.log("Setting current user:", currentUserData);
           setCurrentUser(currentUserData);
-        } else if (session.participants && session.participants.length > 0) {
+        } else if (participantsArray.length > 0) {
           // If no user found but we have participants, use the first one
-          console.log("No user found, using first participant:", session.participants[0]);
-          setCurrentUser(session.participants[0]);
+          console.log("No user found, using first participant:", participantsArray[0]);
+          setCurrentUser(participantsArray[0]);
         } else {
           // Create a temporary user as fallback
           const tempUser = {
@@ -148,7 +172,7 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
         // Load reach categories from settings
         if (service) {
           // Use the session's settingsId or default settings
-          const settingsId = session.settingsId || '00000000-0000-0000-0000-000000000001';
+          const settingsId = sessionData.settingsId || '00000000-0000-0000-0000-000000000001';
           const settings = await service.getSettingsById(settingsId);
           
           if (settings && settings.reachCategories && settings.reachCategories.length > 0) {
@@ -168,9 +192,9 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
         }
         
         // If session has reach data, load votes
-        if (session.reach && session.reach.votes) {
+        if (sessionData.reach && sessionData.reach.votes) {
           // We need to convert votes to include categoryId if needed
-          const formattedVotes: Vote[] = session.reach.votes.map(vote => {
+          const formattedVotes: Vote[] = sessionData.reach.votes.map((vote: any) => {
             // If vote has categoryId, use it directly
             if ('categoryId' in vote) {
               return vote as Vote;
@@ -550,34 +574,6 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
           </p>
         </div>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center text-sm">
-            <Users className="h-4 w-4 mr-1" />
-            <span>{participants.length} Participants</span>
-          </div>
-          
-          {isFacilitator && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setShowVotes(!showVotes)}
-              className="flex items-center"
-            >
-              {showVotes ? (
-                <>
-                  <EyeOff className="h-4 w-4 mr-2" />
-                  Hide votes
-                </>
-              ) : (
-                <>
-                  <Eye className="h-4 w-4 mr-2" />
-                  Show votes
-                </>
-              )}
-            </Button>
-          )}
-        </div>
-        
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <div className="h-10 w-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
@@ -612,30 +608,9 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
                       <span className="font-medium">Example:</span> {category.example}
                     </div>
                   </div>
-                  
-                  {showVotes && (
-                    <div className="flex items-center text-sm">
-                      <span className="font-semibold">{getVoteCountForCategory(category.id)}</span>
-                      <Users className="h-4 w-4 ml-1" />
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
-          </div>
-        )}
-        
-        {showVotes && votes.length > 0 && (
-          <div className="bg-muted/20 p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">Vote Summary</h3>
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                {getVoteSummary().total} / {participants.length} participants voted
-              </div>
-              <div className="font-semibold">
-                Average score: {getVoteSummary().averagePoints.toFixed(2)}
-              </div>
-            </div>
           </div>
         )}
         
@@ -667,7 +642,7 @@ export default function RiceSessionVoting({ sessionId, onBack, onNext }: RiceSes
             <Button 
               variant={hasVoted ? "default" : "outline"} 
               onClick={onNext}
-              disabled={isFacilitator && participants.length > 1 && votes.length < participants.length}
+              disabled={!hasVoted && !isFacilitator}
             >
               Next
               <ArrowRight className="ml-2 h-4 w-4" />

@@ -16,7 +16,7 @@ export interface RiceSession {
   settingsId: string;
   createdAt: Date;
   updatedAt: Date;
-  status: 'draft' | 'active' | 'completed';
+  status: 'draft' | 'active' | 'completed' | 'voting_started';
   createdBy?: string;
   participants: Participant[];
   reach?: ReachVote;

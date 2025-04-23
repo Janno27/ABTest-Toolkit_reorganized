@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Settings, ArrowRight, Trash2, Calendar, Loader2 } from "lucide-react";
+import { Settings, ArrowRight, Trash2, Calendar, Loader2, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { RiceSettingsModal } from "./RiceSettingsModal";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ import RiceSessionSteps from "../session/RiceSessionSteps";
 import { v4 as uuidv4 } from 'uuid';
 import { RiceSession } from "../../../services/RiceSessionService";
 import { User } from "@supabase/supabase-js";
-import { supabase } from "../../../lib/supabase";
+import { supabase } from "@/app/lib/supabase";
 import { useToast } from "@/app/hooks/use-toast";
 import supabaseRiceSessionService from "../../../services/db/SupabaseRiceSessionService";
 
@@ -28,6 +28,7 @@ export default function PrioritizationTool() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [copyTooltip, setCopyTooltip] = useState<string | null>(null);
   
   // Use the pre-created Supabase service instance
   const sessionService = supabaseRiceSessionService;
@@ -132,6 +133,24 @@ export default function PrioritizationTool() {
     localStorage.setItem(`rice_current_session_name`, name);
     
     setActiveSession({id, name});
+  };
+
+  // Fonction pour partager un lien vers la session
+  const shareSessionLink = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Empêche le démarrage de la session lors du clic sur le bouton de partage
+    
+    const baseUrl = window.location.origin;
+    const shareUrl = `${baseUrl}/rice/${id}`;
+    
+    navigator.clipboard.writeText(shareUrl);
+    
+    toast({
+      title: "Link copied",
+      description: "The invitation link has been copied to your clipboard"
+    });
+    
+    setCopyTooltip(id);
+    setTimeout(() => setCopyTooltip(null), 2000);
   };
 
   // If a session is active, show its steps
@@ -249,17 +268,31 @@ export default function PrioritizationTool() {
                             {formatDate(session.createdAt)}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 rounded-full" 
+                        <div className="flex items-center">
+                          <div className="relative">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              onClick={(e) => shareSessionLink(session.id, e)}
+                              title="Partager le lien d'invitation"
+                            >
+                              <Share2 className="h-4 w-4" />
+                            </Button>
+                            {copyTooltip === session.id && (
+                              <div className="absolute top-full right-0 mt-1 px-2 py-1 bg-background border rounded-md shadow-sm text-xs whitespace-nowrap">
+                                Link copied!
+                              </div>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
                             onClick={(e) => deleteSession(session.id, e)}
+                            title="Delete session"
                           >
-                            <Trash2 className="h-4 w-4 text-muted-foreground" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                            <ArrowRight className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>

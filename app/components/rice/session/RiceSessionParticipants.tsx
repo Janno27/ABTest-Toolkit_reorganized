@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowRight, UserPlus, Crown, Users, AlertCircle } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import supabaseRiceSessionService from "../../../services/db/SupabaseRiceSessionService";
+import { useToast } from "@/app/hooks/use-toast";
 
 interface Participant {
   id: string;
@@ -30,6 +31,9 @@ export default function RiceSessionParticipants({ sessionId, onStartSession }: R
   const [recentSessions, setRecentSessions] = useState<Participant[]>([]);
   const [sessionName, setSessionName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showCopyTooltip, setShowCopyTooltip] = useState(false);
+  const [forceStepChange, setForceStepChange] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchSessionData = async () => {
@@ -41,7 +45,7 @@ export default function RiceSessionParticipants({ sessionId, onStartSession }: R
         // Get current user from localStorage if it exists
         const storedUser = localStorage.getItem(`rice_session_${sessionId}_user`);
         
-        // Fetch participants from Supabase
+        // Fetch participants from Supabase (ce composant a BESOIN de faire cet appel)
         const session = await supabaseRiceSessionService.getSessionById(sessionId);
         
         if (session && session.participants) {
@@ -79,7 +83,7 @@ export default function RiceSessionParticipants({ sessionId, onStartSession }: R
 
     fetchSessionData();
     
-    // Set up polling for participant updates
+    // Réduire la fréquence du polling pour éviter les problèmes de performance
     const intervalId = setInterval(async () => {
       try {
         const session = await supabaseRiceSessionService.getSessionById(sessionId);
@@ -92,10 +96,29 @@ export default function RiceSessionParticipants({ sessionId, onStartSession }: R
       } catch (error) {
         console.error("Error polling for participant updates:", error);
       }
-    }, 2000);
+    }, 2000); // Polling moins fréquent, toutes les 5 secondes au lieu de 2
     
     return () => clearInterval(intervalId);
   }, [sessionId, participants.length]);
+
+  // Function to check if step change is being forced
+  useEffect(() => {
+    // Poll for session status updates
+    const checkForceStepChange = async () => {
+      try {
+        const session = await supabaseRiceSessionService.getSessionById(sessionId);
+        if (session && session.status && session.status === 'voting_started') {
+          // Force transition to next step
+          onStartSession();
+        }
+      } catch (error) {
+        console.error("Error checking session status:", error);
+      }
+    };
+
+    const intervalId = setInterval(checkForceStepChange, 2000);
+    return () => clearInterval(intervalId);
+  }, [sessionId, onStartSession]);
 
   const handleJoinSession = async () => {
     if (!userName.trim()) return;
@@ -122,6 +145,11 @@ export default function RiceSessionParticipants({ sessionId, onStartSession }: R
       // Also save it to a global key that other components can access
       localStorage.setItem("rice_current_user_id", newParticipant.id);
       
+      // Stocker explicitement si l'utilisateur est un hôte pour les autres composants
+      const isUserHost = newParticipant.role === "facilitator";
+      localStorage.setItem(`rice_session_${sessionId}_is_host`, JSON.stringify(isUserHost));
+      console.log(`Stored user host status in localStorage: ${isUserHost}`);
+      
       console.log("Saved user to Supabase:", newParticipant);
       setCurrentUser(newParticipant);
       
@@ -136,6 +164,49 @@ export default function RiceSessionParticipants({ sessionId, onStartSession }: R
       console.error("Error joining session:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  const handleCopyLink = () => {
+    const baseUrl = window.location.origin;
+    const shareUrl = `${baseUrl}/rice/${sessionId}`;
+    
+    navigator.clipboard.writeText(shareUrl);
+    
+    toast({
+      title: "Link copied",
+      description: "The invitation link has been copied to your clipboard"
+    });
+    
+    setShowCopyTooltip(true);
+    setTimeout(() => setShowCopyTooltip(false), 2000);
+  };
+  
+  const handleStartSession = async () => {
+    try {
+      // Sauvegarder le nombre final de participants
+      localStorage.setItem(`rice_session_${sessionId}_participant_count`, participants.length.toString());
+      console.log(`Saved participant count: ${participants.length} to localStorage`);
+
+      // Sauvegarder la liste finale des participants à utiliser dans les autres étapes
+      localStorage.setItem(`rice_session_${sessionId}_final_participants`, JSON.stringify(participants));
+      
+      // Confirmer le statut d'hôte avant de passer à l'étape suivante
+      localStorage.setItem(`rice_session_${sessionId}_is_host`, JSON.stringify(true));
+      console.log("Confirmed host status in localStorage before starting session");
+
+      // Update session status to force all participants to the next step
+      await supabaseRiceSessionService.updateSessionStatus(sessionId, 'voting_started');
+      
+      // Then proceed to next step for the host
+      onStartSession();
+    } catch (error) {
+      console.error("Error starting session:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start session",
+        variant: "destructive"
+      });
     }
   };
 
@@ -182,19 +253,23 @@ export default function RiceSessionParticipants({ sessionId, onStartSession }: R
                   <Users className="h-4 w-4 mr-2" />
                   Participants ({participants.length})
                 </h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="px-2 h-7 text-xs text-muted-foreground hover:text-foreground"
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    // Could add a toast notification here
-                  }}
-                  title="Copy session link"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                  <span>Copy link</span>
-                </Button>
+                <div className="relative">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="px-2 h-7 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={handleCopyLink}
+                    title="Copy invitation link"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                    <span>Copy invitation link</span>
+                  </Button>
+                  {showCopyTooltip && (
+                    <div className="absolute top-full right-0 mt-1 px-2 py-1 bg-background border rounded-md shadow-sm text-xs">
+                      Link copied!
+                    </div>
+                  )}
+                </div>
               </div>
               
               <div className="border rounded-md overflow-hidden">
@@ -231,7 +306,7 @@ export default function RiceSessionParticipants({ sessionId, onStartSession }: R
             
             <div className="flex justify-end">
               <Button 
-                onClick={onStartSession}
+                onClick={handleStartSession}
                 disabled={!canStartSession}
                 className="flex items-center gap-1"
               >

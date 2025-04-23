@@ -94,8 +94,12 @@ export default function Home() {
   };
 
   const calculateDays = async () => {
-    setIsCalculating(true);
-    try {
+  setIsCalculating(true);
+  // Scroll immédiat vers la zone de résultats
+  setTimeout(() => {
+    resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 0);
+  try {
       // URL du backend FastAPI sur Render
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://abtest-toolkit.onrender.com";
       

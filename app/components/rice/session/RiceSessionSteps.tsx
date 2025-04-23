@@ -7,12 +7,13 @@ import RiceSessionImpact from "./RiceSessionImpact";
 import RiceSessionConfidence from "./RiceSessionConfidence";
 import RiceSessionEffort from "./RiceSessionEffort";
 import RiceSessionResults from "./RiceSessionResults";
+import RiceSessionThankYou from "./RiceSessionThankYou";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Trophy, Lightbulb, Percent, Clock, Target } from "lucide-react";
 
-type Step = "participants" | "reach" | "impact" | "confidence" | "effort" | "results";
+type Step = "participants" | "reach" | "impact" | "confidence" | "effort" | "results" | "thankyou";
 
 interface RiceSessionStepsProps {
   sessionId: string;
@@ -50,6 +51,9 @@ export default function RiceSessionSteps({ sessionId }: RiceSessionStepsProps) {
       case "effort":
         setCurrentStep("results");
         break;
+      case "results":
+        setCurrentStep("thankyou");
+        break;
       default:
         break;
     }
@@ -72,6 +76,9 @@ export default function RiceSessionSteps({ sessionId }: RiceSessionStepsProps) {
         break;
       case "results":
         setCurrentStep("effort");
+        break;
+      case "thankyou":
+        setCurrentStep("results");
         break;
       default:
         break;
@@ -232,7 +239,13 @@ export default function RiceSessionSteps({ sessionId }: RiceSessionStepsProps) {
                   <RiceSessionResults
                     sessionId={sessionId}
                     onBack={goToPrevious}
-                    onFinish={() => window.location.href = "/"}
+                    onFinish={goToNext}
+                  />
+                )}
+                
+                {currentStep === "thankyou" && (
+                  <RiceSessionThankYou
+                    sessionId={sessionId}
                   />
                 )}
               </motion.div>
@@ -519,7 +532,8 @@ function StepIndicator({
     impact: 3,
     confidence: 4,
     effort: 5,
-    results: 6
+    results: 6,
+    thankyou: 7
   };
   
   const isActive = currentStep === step;
@@ -554,16 +568,18 @@ function StepIndicator({
 function calculateProgress(currentStep: Step): number {
   switch (currentStep) {
     case "participants":
-      return 0;
+      return 16;
     case "reach":
-      return 20;
+      return 32;
     case "impact":
-      return 40;
+      return 48;
     case "confidence":
-      return 60;
+      return 64;
     case "effort":
       return 80;
     case "results":
+      return 95;
+    case "thankyou":
       return 100;
     default:
       return 0;

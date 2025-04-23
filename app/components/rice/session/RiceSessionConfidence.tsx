@@ -58,7 +58,7 @@ export default function RiceSessionConfidence({ sessionId, onBack, onNext }: Ric
   const { service, isLoading: isServiceLoading, error: serviceError } = useRiceSettingsService();
   const { toast } = useToast();
   
-  // Simuler le chargement des données depuis localStorage
+  // Suppression du polling et ne charger les votes qu'une seule fois
   useEffect(() => {
     // Charger l'utilisateur actuel
     const storedUser = localStorage.getItem(`rice_session_${sessionId}_user`);
@@ -66,10 +66,30 @@ export default function RiceSessionConfidence({ sessionId, onBack, onNext }: Ric
       setCurrentUser(JSON.parse(storedUser));
     }
     
-    // Charger les participants
-    const storedParticipants = localStorage.getItem(`rice_session_${sessionId}_participants`);
+    // Charger les participants directement depuis localStorage
+    const storedParticipants = localStorage.getItem(`rice_session_${sessionId}_final_participants`);
     if (storedParticipants) {
-      setParticipants(JSON.parse(storedParticipants));
+      try {
+        const parsedParticipants = JSON.parse(storedParticipants);
+        console.log('RiceSessionConfidence: Participants chargés depuis localStorage:', parsedParticipants);
+        setParticipants(parsedParticipants);
+      } catch (error) {
+        console.error('RiceSessionConfidence: Erreur lors du parsing des participants:', error);
+      }
+    }
+    
+    // Si le nombre de participants est stocké mais pas la liste, l'utiliser pour l'affichage
+    const storedParticipantCount = localStorage.getItem(`rice_session_${sessionId}_participant_count`);
+    if (storedParticipantCount && (!storedParticipants || participants.length === 0)) {
+      try {
+        const count = parseInt(storedParticipantCount, 10);
+        if (!isNaN(count)) {
+          console.log(`RiceSessionConfidence: Utilisation du nombre de participants stocké: ${count}`);
+          // On peut créer des participants fictifs si nécessaire ici
+        }
+      } catch (error) {
+        console.error('RiceSessionConfidence: Erreur lors du parsing du nombre de participants:', error);
+      }
     }
     
     // Récupérer les sources de confiance depuis Supabase
@@ -131,18 +151,7 @@ export default function RiceSessionConfidence({ sessionId, onBack, onNext }: Ric
       }
     }
     
-    // Simuler des mises à jour en temps réel (pourrait être remplacé par des webhooks ou des sockets)
-    const interval = setInterval(() => {
-      const storedVotes = localStorage.getItem(`rice_session_${sessionId}_confidence_votes`);
-      if (storedVotes) {
-        setVotes(JSON.parse(storedVotes));
-      }
-    }, 5000);
-    
-    return () => {
-      clearInterval(interval);
-    };
-  }, [sessionId, service, currentUser?.id]);
+  }, [sessionId, service, currentUser?.id, participants.length]);
   
   // Verify if the user has already voted when loading existing votes
   useEffect(() => {
@@ -354,18 +363,13 @@ export default function RiceSessionConfidence({ sessionId, onBack, onNext }: Ric
         </div>
         
         <div className="flex items-center justify-between">
-          <div className="flex items-center text-sm">
-            <Users className="h-4 w-4 mr-1" />
-            <span>{participants.length} Participants</span>
-          </div>
-          
           {isHost && (
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => setShowVotes(!showVotes)}
               disabled={!canRevealVotes() && !showVotes}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 ml-auto"
             >
               {showVotes ? (
                 <>
@@ -519,7 +523,7 @@ export default function RiceSessionConfidence({ sessionId, onBack, onNext }: Ric
           </Button>
           <Button 
             onClick={onNext}
-            disabled={!hasVoted || userSources.length === 0}
+            disabled={!isHost && (!hasVoted || userSources.length === 0)}
           >
             Next Step
           </Button>
