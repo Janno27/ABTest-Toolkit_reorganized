@@ -8,12 +8,14 @@ import RiceSessionConfidence from "./RiceSessionConfidence";
 import RiceSessionEffort from "./RiceSessionEffort";
 import RiceSessionResults from "./RiceSessionResults";
 import RiceSessionThankYou from "./RiceSessionThankYou";
+import ExperimentInfoStep from "./ExperimentInfoStep";
+import ExperimentInfoModal from "./ExperimentInfoModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Trophy, Lightbulb, Percent, Clock, Target } from "lucide-react";
+import { Trophy, Lightbulb, Percent, Clock, Target, Info, FlaskConical, Beaker } from "lucide-react";
 
-type Step = "participants" | "reach" | "impact" | "confidence" | "effort" | "results" | "thankyou";
+type Step = "participants" | "experiment-info" | "reach" | "impact" | "confidence" | "effort" | "results" | "thankyou";
 
 interface RiceSessionStepsProps {
   sessionId: string;
@@ -24,6 +26,13 @@ export default function RiceSessionSteps({ sessionId }: RiceSessionStepsProps) {
   const [direction, setDirection] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showDetails, setShowDetails] = useState(false);
+  const [hasAirtableRecord, setHasAirtableRecord] = useState(false);
+
+  useEffect(() => {
+    // Vérifier si cette session est liée à un enregistrement Airtable
+    const airtableRecordId = localStorage.getItem(`rice_session_${sessionId}_airtable_record_id`);
+    setHasAirtableRecord(!!airtableRecordId);
+  }, [sessionId]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -37,6 +46,14 @@ export default function RiceSessionSteps({ sessionId }: RiceSessionStepsProps) {
     setDirection(1);
     switch (currentStep) {
       case "participants":
+        // Si un ID Airtable est associé à cette session, on va à l'étape d'info
+        if (hasAirtableRecord) {
+          setCurrentStep("experiment-info");
+        } else {
+          setCurrentStep("reach");
+        }
+        break;
+      case "experiment-info":
         setCurrentStep("reach");
         break;
       case "reach":
@@ -62,8 +79,15 @@ export default function RiceSessionSteps({ sessionId }: RiceSessionStepsProps) {
   const goToPrevious = () => {
     setDirection(-1);
     switch (currentStep) {
-      case "reach":
+      case "experiment-info":
         setCurrentStep("participants");
+        break;
+      case "reach":
+        if (hasAirtableRecord) {
+          setCurrentStep("experiment-info");
+        } else {
+          setCurrentStep("participants");
+        }
         break;
       case "impact":
         setCurrentStep("reach");
@@ -130,8 +154,10 @@ export default function RiceSessionSteps({ sessionId }: RiceSessionStepsProps) {
       <Card className="relative backdrop-blur-sm bg-background/80 rounded-xl border-0 z-10 p-6">
         <div className="container mx-auto">
           <div className="mb-6">
-            <div className="flex justify-center items-center mb-4">
+            <div className="flex justify-between items-center mb-4">
+              <div className="w-6" />
               <h1 className="text-2xl font-bold text-center">RICE Prioritization</h1>
+              <ExperimentInfoModal sessionId={sessionId} />
             </div>
             
             <div className="relative">
@@ -140,7 +166,7 @@ export default function RiceSessionSteps({ sessionId }: RiceSessionStepsProps) {
                   className="h-2 bg-primary rounded-full"
                   initial={{ width: 0 }}
                   animate={{ 
-                    width: `${calculateProgress(currentStep)}%`,
+                    width: `${calculateProgress(currentStep, hasAirtableRecord)}%`,
                     transition: { duration: 0.5 }
                   }}
                 />
@@ -151,31 +177,47 @@ export default function RiceSessionSteps({ sessionId }: RiceSessionStepsProps) {
                   step="participants" 
                   currentStep={currentStep}
                   label="Participants" 
+                  hasAirtableRecord={hasAirtableRecord}
                 />
+                
+                {hasAirtableRecord && (
+                  <StepIndicator 
+                    step="experiment-info"
+                    currentStep={currentStep}
+                    label="Info" 
+                    hasAirtableRecord={hasAirtableRecord}
+                  />
+                )}
+                
                 <StepIndicator 
                   step="reach" 
                   currentStep={currentStep}
                   label="Reach" 
+                  hasAirtableRecord={hasAirtableRecord}
                 />
                 <StepIndicator 
                   step="impact" 
                   currentStep={currentStep}
                   label="Impact" 
+                  hasAirtableRecord={hasAirtableRecord}
                 />
                 <StepIndicator 
                   step="confidence" 
                   currentStep={currentStep}
                   label="Confidence" 
+                  hasAirtableRecord={hasAirtableRecord}
                 />
                 <StepIndicator 
                   step="effort" 
                   currentStep={currentStep}
                   label="Effort" 
+                  hasAirtableRecord={hasAirtableRecord}
                 />
                 <StepIndicator 
                   step="results" 
                   currentStep={currentStep}
                   label="Results" 
+                  hasAirtableRecord={hasAirtableRecord}
                 />
               </div>
             </div>
@@ -200,6 +242,13 @@ export default function RiceSessionSteps({ sessionId }: RiceSessionStepsProps) {
                   <RiceSessionParticipants
                     sessionId={sessionId}
                     onStartSession={goToNext}
+                  />
+                )}
+                
+                {currentStep === "experiment-info" && (
+                  <ExperimentInfoStep
+                    sessionId={sessionId}
+                    onContinue={goToNext}
                   />
                 )}
                 
@@ -520,24 +569,29 @@ function getRiceQualitativeScore(score: number) {
 function StepIndicator({ 
   step, 
   currentStep, 
-  label 
+  label,
+  hasAirtableRecord = false
 }: { 
   step: Step; 
   currentStep: Step;
   label: string;
+  hasAirtableRecord?: boolean;
 }) {
   const stepOrder: Record<Step, number> = {
     participants: 1,
-    reach: 2,
-    impact: 3,
-    confidence: 4,
-    effort: 5,
-    results: 6,
-    thankyou: 7
+    "experiment-info": 2,
+    reach: hasAirtableRecord ? 3 : 2,
+    impact: hasAirtableRecord ? 4 : 3,
+    confidence: hasAirtableRecord ? 5 : 4,
+    effort: hasAirtableRecord ? 6 : 5,
+    results: hasAirtableRecord ? 7 : 6,
+    thankyou: hasAirtableRecord ? 8 : 7
   };
   
   const isActive = currentStep === step;
-  const isCompleted = stepOrder[currentStep] > stepOrder[step];
+  const isCompleted = isPastStep(currentStep, step);
+  
+  let stepNumber = stepOrder[step];
   
   return (
     <div className="flex flex-col items-center">
@@ -556,7 +610,7 @@ function StepIndicator({
               : "border-muted bg-transparent text-muted-foreground"
         }`}
       >
-        {stepOrder[step]}
+        {stepNumber}
       </motion.div>
       <span className={`text-xs mt-1 ${
         isActive ? "font-medium" : "text-muted-foreground"
@@ -565,20 +619,43 @@ function StepIndicator({
   );
 }
 
-function calculateProgress(currentStep: Step): number {
+function isPastStep(currentStep: Step, step: Step): boolean {
+  const steps: Step[] = [
+    "participants",
+    "experiment-info",
+    "reach",
+    "impact",
+    "confidence",
+    "effort",
+    "results",
+    "thankyou"
+  ];
+  
+  const currentIndex = steps.indexOf(currentStep);
+  const stepIndex = steps.indexOf(step);
+  
+  return stepIndex < currentIndex;
+}
+
+function calculateProgress(currentStep: Step, hasAirtableRecord: boolean = false): number {
+  const totalSteps = hasAirtableRecord ? 7 : 6;
+  const stepPercentage = 100 / totalSteps;
+  
   switch (currentStep) {
     case "participants":
-      return 16;
+      return 0;
+    case "experiment-info":
+      return stepPercentage;
     case "reach":
-      return 32;
+      return hasAirtableRecord ? stepPercentage * 2 : stepPercentage;
     case "impact":
-      return 48;
+      return hasAirtableRecord ? stepPercentage * 3 : stepPercentage * 2;
     case "confidence":
-      return 64;
+      return hasAirtableRecord ? stepPercentage * 4 : stepPercentage * 3;
     case "effort":
-      return 80;
+      return hasAirtableRecord ? stepPercentage * 5 : stepPercentage * 4;
     case "results":
-      return 95;
+      return hasAirtableRecord ? stepPercentage * 6 : stepPercentage * 5;
     case "thankyou":
       return 100;
     default:

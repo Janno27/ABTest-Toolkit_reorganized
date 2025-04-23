@@ -51,7 +51,7 @@ export default function AirtableRecordSelector({ onSelectRecord }: AirtableRecor
   return (
     <Select onValueChange={handleSelectChange}>
       <SelectTrigger className="w-full border border-input rounded-md bg-background/60">
-        <SelectValue placeholder="Sélectionner un test" />
+        <SelectValue placeholder="Select a test" />
       </SelectTrigger>
       <SelectContent>
         {records.map((record) => (

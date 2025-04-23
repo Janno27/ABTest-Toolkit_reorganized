@@ -27,6 +27,7 @@ export default function PrioritizationTool() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [sessionName, setSessionName] = useState("");
+  const [selectedAirtableRecord, setSelectedAirtableRecord] = useState<AirtableRecord | null>(null);
   const [recentSessions, setRecentSessions] = useState<RiceSession[]>([]);
   const [activeSession, setActiveSession] = useState<{id: string, name: string} | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -89,7 +90,14 @@ export default function PrioritizationTool() {
       
       // Update local state
       setRecentSessions([newSession, ...recentSessions]);
+      
+      // Si la session est créée à partir d'un enregistrement Airtable, enregistrer l'ID
+      if (selectedAirtableRecord) {
+        localStorage.setItem(`rice_session_${newSession.id}_airtable_record_id`, selectedAirtableRecord.id);
+      }
+      
       setSessionName("");
+      setSelectedAirtableRecord(null);
       
       // Show success toast
       toast({
@@ -114,6 +122,7 @@ export default function PrioritizationTool() {
   const handleAirtableRecordSelected = (record: AirtableRecord) => {
     // Mettre à jour le nom de session avec le nom du record Airtable
     setSessionName(record.name);
+    setSelectedAirtableRecord(record);
   };
 
   const deleteSession = async (id: string, e: React.MouseEvent) => {
@@ -206,21 +215,23 @@ export default function PrioritizationTool() {
         <Card className="relative p-6 backdrop-blur-sm bg-background/80 rounded-xl border-0 z-10">
           <div className="grid gap-6">
             <div className="text-center">
-              <h3 className="text-xl font-medium mb-1">Prioritization Tool</h3>
-              <p className="text-sm text-muted-foreground">
-                Create and manage collaborative prioritization sessions for your teams
-              </p>
-            </div>
-            
-            <div className="flex justify-end">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setShowSettingsModal(true)}
-                className="h-8 w-8 rounded-full"
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
+              <div className="flex justify-between items-center">
+                <div />
+                <div className="text-center">
+                  <h3 className="text-xl font-medium">Prioritization Tool</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Create and manage collaborative prioritization sessions for your teams
+                  </p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setShowSettingsModal(true)}
+                  className="h-8 w-8 rounded-full"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             
             <div>

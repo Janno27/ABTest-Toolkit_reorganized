@@ -3,6 +3,19 @@
 export interface AirtableRecord {
   id: string;
   name: string;
+  hypothesis?: string;
+  ownerId?: string;
+  ownerName?: string;
+  marketId?: string;
+  marketName?: string;
+  pageId?: string;
+  pageName?: string;
+  context?: string;
+  description?: string;
+  mainKpiId?: string;
+  mainKpiName?: string;
+  scope?: string;
+  recordLink?: string;
 }
 
 class AirtableService {
@@ -41,6 +54,30 @@ class AirtableService {
         { id: "rec5", name: "Mobile app onboarding" }
       ];
     }
+  }
+  
+  async getRecordById(recordId: string): Promise<AirtableRecord | null> {
+    try {
+      if (!recordId) return null;
+      
+      const response = await fetch(`/api/airtable/${recordId}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`API error: ${JSON.stringify(errorData)}`);
+      }
+      
+      const data: AirtableRecord = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Erreur lors de la récupération du détail Airtable:", error);
+      return null;
+    }
+  }
+  
+  // Vérifie si l'ID a le format d'un ID Airtable (commence par 'rec')
+  isAirtableRecordId(id: string): boolean {
+    return typeof id === 'string' && id.startsWith('rec');
   }
 }
 
