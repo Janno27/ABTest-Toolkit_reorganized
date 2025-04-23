@@ -3,10 +3,10 @@ import { GET_ONE, AirtableExperimentRecord } from '../route';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { record_id: string } }
+  context: { params: { record_id: string } }
 ) {
   try {
-    const recordId = params.record_id;
+    const recordId = context.params.record_id;
     
     if (!recordId) {
       return NextResponse.json(
