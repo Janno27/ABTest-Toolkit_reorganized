@@ -48,7 +48,7 @@ async function fetchAirtableRecord(recordId: string): Promise<AirtableExperiment
 
 export async function GET(
   request: Request,
-  context: { params: { record_id: string } }
+  context: any
 ) {
   try {
     const record = await fetchAirtableRecord(context.params.record_id);
