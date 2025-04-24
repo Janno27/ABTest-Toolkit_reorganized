@@ -1,17 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { GET_ONE } from '../route';
 
+// Force le comportement dynamique de la route
+export const dynamic = 'force-dynamic';
+
+// Utiliser les syntaxes exactes de la documentation Next.js
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { record_id: string } } // Typage strict Next.js 13+
+  request: Request,
+  { params }: { params: { record_id: string } }
 ) {
-  try {    
-    const record = await GET_ONE(params.record_id);
-    return NextResponse.json(record);
+  const id = params.record_id;
+
+  try {
+    const record = await GET_ONE(id);
+    
+    if (!record) {
+      return new NextResponse(JSON.stringify({ error: "Record not found" }), { 
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
+    return new NextResponse(JSON.stringify(record), { 
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to fetch record" },
-      { status: 500 }
-    );
+    console.error("Error fetching record:", error);
+    return new NextResponse(JSON.stringify({ error: "Failed to fetch record" }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
